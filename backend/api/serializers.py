@@ -33,8 +33,8 @@ class ListEventSerializer(serializers.ModelSerializer):
     Serializer for one event by event_id
     """
 
-    eventDate = DateSerializer(many=True, read_only=True)
-    eventRespondent = RespondentSerializer(many=True, read_only=True)
+    eventDates = DateSerializer(many=True, read_only=True)
+    # eventRespondent = RespondentSerializer(many=True, read_only=True)
 
     class Meta:
         model = Event
@@ -45,8 +45,8 @@ class ListEventSerializer(serializers.ModelSerializer):
             "type",
             "startTime",
             "endTime",
-            "eventDate",
-            "eventRespondent",
+            "eventDates",
+            # "eventRespondent",
         )
 
 
@@ -55,21 +55,21 @@ class ListAllEventSerializer(serializers.ModelSerializer):
     Serializer for All events
     """
 
-    eventDate = DateSerializer(many=True)
-    id = serializers.UUIDField(read_only=True)
+    eventDates = DateSerializer(many=True)
+    id = serializers.CharField(read_only=True)
 
     class Meta:
         model = Event
-        fields = ("id", "owner", "name", "type", "startTime", "endTime", "eventDate")
+        fields = ("id", "owner", "name", "type", "startTime", "endTime", "eventDates")
 
     def validate_startTime(self, data):
         """
         validate that startTime minute must end with '00'. Eg: 09:00
-        validate that startTime hour must be between 01 - 23. Eg: 01:00 <-> 23:00
+        validate that startTime hour must be between 01 - 23. Eg: 00:00 <-> 23:00
         """
         startTime = data
-        hour = datetime.strftime(datetime.strptime(startTime, "%H:%M"), "%H")
-        minute = datetime.strftime(datetime.strptime(startTime, "%H:%M"), "%M")
+        hour = datetime.strftime(datetime.strptime(startTime, "%H:%M:%S"), "%H")
+        minute = datetime.strftime(datetime.strptime(startTime, "%H:%M:%S"), "%M")
         if minute != "00":
             raise serializers.ValidationError("startTime must end with '00'. Eg: 09:00")
         elif int(hour) < 0 or int(hour) > 23:
@@ -81,38 +81,20 @@ class ListAllEventSerializer(serializers.ModelSerializer):
 
     def validate_endTime(self, data):
         validate_endTime = data
-        minute = datetime.strftime(datetime.strptime(validate_endTime, "%H:%M"), "%M")
+        minute = datetime.strftime(
+            datetime.strptime(validate_endTime, "%H:%M:%S"), "%M"
+        )
         if minute != "00":
             raise serializers.ValidationError("endTime must end with '00'. Eg: 09:00")
         else:
             return data
-
-    def validate(self, data):
-        """
-        validate that startTime must be sooner than endTime
-        """
-        startTime = data.get("startTime")
-        endTime = data.get("endTime")
-        format_startTime = datetime.strptime(
-            f"{datetime.now().strftime('%Y-%m-%d')} {startTime}", r"%Y-%m-%d %H:%M"
-        )
-        format_endTime = datetime.strptime(
-            f"{datetime.now().strftime('%Y-%m-%d')} {endTime}", r"%Y-%m-%d %H:%M"
-        )
-
-        isValid = format_endTime >= format_startTime
-        if not isValid:
-            raise serializers.ValidationError(
-                "startTime cannot be greater than endTime"
-            )
-        return data
 
     def create(self, validated_data):
         event_id = uuid4()
         event_type = validated_data.get("type")
 
         # get eventDate array & remove it from request payload
-        dates_data = validated_data.pop("eventDate")
+        dates_data = validated_data.pop("eventDates")
 
         event_data = {"id": event_id, **validated_data}
         # Insert into Event table -> returns Event object

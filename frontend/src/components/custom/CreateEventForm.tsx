@@ -28,6 +28,10 @@ import {
 import { Calendar } from "@/components/ui/calendar";
 import { TIME_PICKER_OPTIONS } from "@/utils/globals";
 import { useState } from "react";
+import { Loader2 } from "lucide-react";
+import { formatCalendarDate, formatCalendarTime } from "@/utils/formatter";
+import { createEvent } from "@/services/api/api";
+import { useNavigate } from "react-router-dom";
 
 type CreateEventFormProp = {
   className: string;
@@ -40,26 +44,30 @@ enum EventType {
 
 // const dateArrayZod = z.array(z.date().or(z.string())).nonempty({ message: "Select dates for event" })
 // Form validation schema
-const formSchema = z.object({
-  eventName: z.string().min(1, {
-    message: "Event name required",
-  }),
-  startTime: z.string().time({ message: "Start time required" }),
-  endTime: z.string().time({ message: "End time required" }),
-  eventDateType: z.string(),
-  eventDates: z.union([
-    z.string().array().nonempty("At least one day required"),
-    z.date().array().nonempty("At least one date required"),
-  ]),
-  //  z
-  //   .array(z.date().or(z.array(z.string())))
-  //   .nonempty({ message: "Select dates for event" }),
-});
+const formSchema = z
+  .object({
+    eventName: z.string().min(1, {
+      message: "Event name required",
+    }),
+    startTime: z.string().time({ message: "Start time required" }),
+    endTime: z.string().time({ message: "End time required" }),
+    eventDateType: z.number(),
+    eventDates: z.union([
+      z.string().array().nonempty("At least one day required"),
+      z.date().array().nonempty("At least one date required"),
+    ]),
+  })
+  .refine((data) => data.startTime <= data.endTime, {
+    message: "Start time must be earlier than End time",
+    path: ["startTime"], // path of error
+  });
 
 const CreateEventForm = ({ className }: CreateEventFormProp) => {
   const [eventType, setEventType] = useState<EventType>(
     EventType.SPECIFIC_DATES
   );
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const navigate = useNavigate();
 
   console.log(eventType.toString());
   const form = useForm<z.infer<typeof formSchema>>({
@@ -68,22 +76,70 @@ const CreateEventForm = ({ className }: CreateEventFormProp) => {
       eventName: "",
       startTime: "09:00:00",
       endTime: "17:00:00",
-      eventDateType: eventType == EventType.SPECIFIC_DATES ? "1" : "2",
+      eventDateType: eventType == EventType.SPECIFIC_DATES ? 1 : 2,
       eventDates: [],
     },
   });
 
   // Handle onsubmit
-  function onSubmit(values: z.infer<typeof formSchema>) {
-    console.log(form.formState.errors);
+  async function onSubmit(values: z.infer<typeof formSchema>) {
+    // set to loading
+    setIsLoading(true);
+
     console.log("submitted");
+
+    // format event payload
+    let createEventPayload;
+    let formattedDates;
     try {
       console.log(values);
-      toast(
-        <pre className="mt-2 w-[340px] rounded-md bg-slate-950 p-4">
-          <code className="text-white">{JSON.stringify(values, null, 2)}</code>
-        </pre>
+      const { eventName, startTime, endTime, eventDateType, eventDates } =
+        values;
+
+      const startTimeUTC = formatCalendarTime(startTime);
+      const endTimeUTC = formatCalendarTime(endTime);
+
+      if (eventDateType == 1) {
+        const dates = eventDates;
+
+        formattedDates = dates.map((_date) => {
+          const formattedDate = formatCalendarDate(_date as Date, startTime);
+          return {
+            date: formattedDate,
+          };
+        });
+      } else if (eventDateType == 2) {
+        const dates = eventDates;
+
+        formattedDates = dates.map((_date) => {
+          return {
+            dayOfWeek: _date,
+          };
+        });
+      }
+      createEventPayload = {
+        name: eventName,
+        type: eventDateType,
+        startTime: startTimeUTC,
+        endTime: endTimeUTC,
+        eventDates: formattedDates,
+      };
+
+      const createEventResponse = await createEvent(createEventPayload);
+      const { status, data } = createEventResponse;
+      console.log(
+        `createEventResponse:: ${JSON.stringify(createEventResponse)}`
       );
+      if (status == 200) {
+        const { id }: { id: string } = data;
+        setIsLoading(false);
+        navigate(`/events/${id}`);
+      } else if (status == 404) {
+        setIsLoading(false);
+        navigate("/");
+      }
+
+      console.log(`createEventPayload:: ${JSON.stringify(createEventPayload)}`);
     } catch (error) {
       console.error("Form submission error", error);
       toast.error("Failed to submit the form. Please try again.");
@@ -107,7 +163,6 @@ const CreateEventForm = ({ className }: CreateEventFormProp) => {
             </FormItem>
           )}
         />
-
         {/* -------- Start time -------- */}
         <div className="grid grid-cols-12 gap-4">
           <div className="col-span-6">
@@ -171,7 +226,6 @@ const CreateEventForm = ({ className }: CreateEventFormProp) => {
             />
           </div>
         </div>
-
         {/* -------- Date type -------- */}
         <FormField
           control={form.control}
@@ -181,9 +235,10 @@ const CreateEventForm = ({ className }: CreateEventFormProp) => {
               <FormLabel>What dates are you available?</FormLabel>
               <Select
                 onValueChange={(newVal: string) => {
-                  if (newVal == "1") setEventType(EventType.SPECIFIC_DATES);
+                  if (Number(newVal) == 1)
+                    setEventType(EventType.SPECIFIC_DATES);
                   else setEventType(EventType.DAYS_OF_THE_WEEK);
-                  field.onChange(newVal);
+                  field.onChange(Number(newVal));
                 }}
               >
                 <FormControl>
@@ -210,11 +265,11 @@ const CreateEventForm = ({ className }: CreateEventFormProp) => {
             control={form.control}
             name="eventDates"
             render={({ field }) => (
-              <FormItem className="flex flex-col">
+              <FormItem className="flex flex-col mx-auto">
                 <Calendar
                   mode="multiple"
                   selected={field.value as Date[]}
-                  onSelect={field.onChange}
+                  onSelect={(val) => field.onChange(val)}
                   initialFocus
                 />
               </FormItem>
@@ -262,7 +317,16 @@ const CreateEventForm = ({ className }: CreateEventFormProp) => {
           />
         )}
         {/* -------- Event Dates -------- */}
-        <Button type="submit">Submit</Button>
+        {isLoading ? (
+          <Button disabled className="w-full mt-4">
+            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+            Creating Event...
+          </Button>
+        ) : (
+          <Button type="submit" variant="default" className="w-full mt-4">
+            Create Event
+          </Button>
+        )}
       </form>
     </Form>
   );

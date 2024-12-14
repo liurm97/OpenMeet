@@ -31,7 +31,7 @@ class Event(models.Model):
 
     @endTime: from input form
     """
-    id = models.UUIDField(primary_key=True, db_index=True)
+    id = models.CharField(primary_key=True, db_index=True)
     owner = models.CharField(default="-1")
     name = models.CharField(max_length=200, null=False, blank=False)
     type = models.IntegerField(choices=EventType.choices, default=2)
@@ -43,10 +43,12 @@ class Event(models.Model):
         print("start")
         print(self.startTime, self.endTime)
         format_startTime = datetime.strptime(
-            f"{datetime.now().strftime('%Y-%m-%d')} {self.startTime}", f"%Y-%m-%d %H:%M"
+            f"{datetime.now().strftime('%Y-%m-%d')} {self.startTime}",
+            f"%Y-%m-%d %H:%M:%S",
         )
         format_endTime = datetime.strptime(
-            f"{datetime.now().strftime('%Y-%m-%d')} {self.endTime}", f"%Y-%m-%d %H:%M"
+            f"{datetime.now().strftime('%Y-%m-%d')} {self.endTime}",
+            f"%Y-%m-%d %H:%M:%S",
         )
         print("end")
         print(format_startTime, format_endTime)
@@ -99,7 +101,9 @@ class Date(models.Model):
     id = models.UUIDField(primary_key=True, db_index=True)
     date = models.CharField(max_length=100, default="", blank=True, null=True)
     dayOfWeek = models.CharField(max_length=100, default="", blank=True, null=True)
-    event = models.ForeignKey(Event, on_delete=models.CASCADE, related_name="eventDate")
+    event = models.ForeignKey(
+        Event, on_delete=models.CASCADE, related_name="eventDates"
+    )
 
     def __str__(self):
         return f"dateId: {self.id}"

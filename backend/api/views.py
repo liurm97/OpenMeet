@@ -42,11 +42,12 @@ def get_all_or_create_event(request):
             print(f"serializer.validated_data:: {serializer.validated_data}")
             serializer.save()
             return JsonResponse(
-                {"data": serializer.data}, status=status.HTTP_201_CREATED
+                {"status": 200, "data": serializer.data}, status=status.HTTP_201_CREATED
             )
         else:
             return JsonResponse(
-                {"data": serializer.errors}, status=status.HTTP_400_BAD_REQUEST
+                {"status": 400, "data": serializer.errors},
+                status=status.HTTP_400_BAD_REQUEST,
             )
 
 
@@ -59,10 +60,13 @@ def get_event_by_pk(request, event_id: str):
     try:
         event = Event.objects.get(pk=event_id)
         serializer = ListEventSerializer(event)
-        return JsonResponse({"data": serializer.data}, status=status.HTTP_200_OK)
+        return JsonResponse(
+            {"status": 200, "data": serializer.data}, status=status.HTTP_200_OK
+        )
     except Event.DoesNotExist:
         return JsonResponse(
             {
+                "status": 404,
                 "error": "Not found",
                 "error description": f"The event_id `{event_id}` you entered does not exist.",
             },
@@ -71,6 +75,7 @@ def get_event_by_pk(request, event_id: str):
     except ValidationError:
         return JsonResponse(
             {
+                "status": 400,
                 "error": "Invalid data",
                 "error description": f"You have provided invalid data. Please try again.",
             },

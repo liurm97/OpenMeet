@@ -4,12 +4,24 @@ import "./index.css";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import ErrorPage from "./pages/(shared)/ErrorPage.tsx";
 import UnAuthenticatedHomePage from "./pages/(unauthenticated)/UnAuthenticatedHomePage.tsx";
+import UnAuthenticatedAvailabilityPage from "./pages/(unauthenticated)/UnAuthenticatedAvailabilityPage.tsx";
 
 const router = createBrowserRouter([
   {
     path: "/",
     element: <UnAuthenticatedHomePage />,
     errorElement: <ErrorPage />,
+  },
+  {
+    path: "/events/:eventId",
+    element: <UnAuthenticatedAvailabilityPage />,
+    errorElement: <ErrorPage />,
+    // loader: getSingleEvent,
+  },
+
+  {
+    path: "/-/notfound",
+    element: <ErrorPage />,
   },
 ]);
 
