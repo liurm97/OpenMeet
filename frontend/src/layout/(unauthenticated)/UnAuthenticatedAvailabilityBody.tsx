@@ -44,7 +44,30 @@ const UnAuthenticatedAvailabilityBody = ({
         {/* Two-column layout */}
         <div className="flex flex-col lg:flex-row gap-8">
           {/* Calendar Grid */}
-          <div className="lg:w-2/3">GRID</div>
+          <div className="lg:w-2/3">
+            <div className="grid grid-cols-3 gap-px bg-gray-200">
+              <div className="bg-white p-4 text-center font-medium">Dec 1</div>
+              <div className="bg-white p-4 text-center font-medium">Dec 2</div>
+              <div className="bg-white p-4 text-center font-medium">Dec 3</div>
+
+              {[...Array(6)].map((_, rowIndex) => (
+                <>
+                  <div
+                    key={`row-${rowIndex}-col-1`}
+                    className="bg-white p-4 border border-gray-100 h-16 cursor-pointer hover:bg-gray-50"
+                  />
+                  <div
+                    key={`row-${rowIndex}-col-2`}
+                    className="bg-white p-4 border border-gray-100 h-16 cursor-pointer hover:bg-gray-50"
+                  />
+                  <div
+                    key={`row-${rowIndex}-col-3`}
+                    className="bg-white p-4 border border-gray-100 h-16 cursor-pointer hover:bg-gray-50"
+                  />
+                </>
+              ))}
+            </div>
+          </div>
 
           {/* Responses */}
           <div className="lg:w-1/3">

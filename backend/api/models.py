@@ -74,7 +74,7 @@ class Respondent(models.Model):
     @participatedEvent: id of event
     """
 
-    id = models.UUIDField(primary_key=True, db_index=True)
+    id = models.CharField(primary_key=True, db_index=True)
     name = models.CharField(max_length=100, null=False, blank=False)
     isGuest = models.BooleanField(null=False, blank=False)
     eventRespondent = models.ForeignKey(
@@ -98,8 +98,8 @@ class Date(models.Model):
     @event: id of event
     """
 
-    id = models.UUIDField(primary_key=True, db_index=True)
-    date = models.CharField(max_length=100, default="", blank=True, null=True)
+    id = models.CharField(primary_key=True, db_index=True)
+    date = models.DateField(max_length=100, default="1900-01-01", blank=True, null=True)
     dayOfWeek = models.CharField(max_length=100, default="", blank=True, null=True)
     event = models.ForeignKey(
         Event, on_delete=models.CASCADE, related_name="eventDates"
@@ -120,8 +120,8 @@ class Availability(models.Model):
     @respondenete: id of respondent
     """
 
-    id = models.UUIDField(primary_key=True, db_index=True)
-    time = models.DateTimeField()
+    id = models.CharField(primary_key=True, db_index=True)
+    time = models.CharField()
     respondent = models.ForeignKey(
         Respondent, on_delete=models.CASCADE, related_name="respondent"
     )
