@@ -16,7 +16,6 @@ const router = createBrowserRouter([
     path: "/events/:eventId",
     element: <UnAuthenticatedAvailabilityPage />,
     errorElement: <ErrorPage />,
-    // loader: getSingleEvent,
   },
 
   {
@@ -26,19 +25,7 @@ const router = createBrowserRouter([
 ]);
 
 createRoot(document.getElementById("root")!).render(
-  // <ChakraProvider
-  //   toastOptions={{ defaultOptions: { position: "bottom" } }}
-  //   resetCSS={false}
-  //   disableGlobalStyle={true}
-  // >
   <StrictMode>
     <RouterProvider router={router} />
   </StrictMode>
-  // </ChakraProvider>
 );
-
-// createRoot(document.getElementById("root")!).render(
-//   <StrictMode>
-//     <App />
-//   </StrictMode>
-// );

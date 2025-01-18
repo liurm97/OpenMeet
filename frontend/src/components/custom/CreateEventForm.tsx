@@ -42,7 +42,6 @@ enum EventType {
   DAYS_OF_THE_WEEK = 2,
 }
 
-// const dateArrayZod = z.array(z.date().or(z.string())).nonempty({ message: "Select dates for event" })
 // Form validation schema
 const formSchema = z
   .object({
