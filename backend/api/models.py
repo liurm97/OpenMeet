@@ -4,7 +4,6 @@ Database models
 
 from django.db import models
 from uuid import uuid4
-from datetime import datetime
 
 
 class Event(models.Model):
@@ -30,32 +29,94 @@ class Event(models.Model):
     @startTime: from input form
 
     @endTime: from input form
-    """
-    id = models.CharField(primary_key=True, db_index=True)
-    owner = models.CharField(default="-1")
-    name = models.CharField(max_length=200, null=False, blank=False)
-    type = models.IntegerField(choices=EventType.choices, default=2)
-    startTime = models.CharField(max_length=200, null=False, blank=False)
-    endTime = models.CharField(max_length=200, null=False, blank=False)
 
-    @property
-    def isValidTime(self):
-        print("start")
-        print(self.startTime, self.endTime)
-        format_startTime = datetime.strptime(
-            f"{datetime.now().strftime('%Y-%m-%d')} {self.startTime}",
-            f"%Y-%m-%d %H:%M:%S",
-        )
-        format_endTime = datetime.strptime(
-            f"{datetime.now().strftime('%Y-%m-%d')} {self.endTime}",
-            f"%Y-%m-%d %H:%M:%S",
-        )
-        print("end")
-        print(format_startTime, format_endTime)
-        return format_endTime > format_startTime
+    1. if start_time_utc < end_time_utc -> difference in hours between the two
+        eg: 9am - 11am -> 9am, 10am, 11am
+
+    2. if start_time_utc = end_time_utc -> take 24 hours span
+        eg: 9am - 9am -> 9am, 10am, 11am, 12am, 1pm, 2pm, 3pm, 4pm, ....., 8am, 9am
+
+    3. if start_time_utc > end_time_utc -> difference in hours between the two
+        eg: 11am - 9am -> 11am, 12pm, 1pm, 2pm, ...., 8am, 9am
+
+    """
+    id = models.CharField(
+        primary_key=True, db_index=True, default=uuid4(), blank=False, null=False
+    )
+
+    # new event defaults to no owner or user id of a signed-in user
+    owner = models.CharField(default="-1", blank=False, null=False)
+
+    name = models.CharField(max_length=200, null=False, blank=False)
+
+    type = models.IntegerField(
+        choices=EventType.choices, default=1, blank=False, null=False
+    )
+
+    start_time_utc = models.CharField(max_length=200, null=False, blank=False)
+    end_time_utc = models.CharField(max_length=200, null=False, blank=False)
+    created_at_utc = models.DateTimeField(auto_now_add=True)
+    updated_at_utc = models.DateTimeField(auto_now=True)
 
     def __str__(self):
-        return self.name
+        return f"Event id: {self.id} | Event name: {self.name}"
+
+
+class Date(models.Model):
+    """
+    Date table - stores specific dates associated to an event.
+
+    @id: auto generated
+
+    @date: from input form (if any)
+
+    @event: id of event
+    """
+
+    id = models.CharField(primary_key=True, db_index=True, default=uuid4())
+    date = models.DateField(max_length=100, blank=True, null=True)
+    event = models.ForeignKey(
+        Event, on_delete=models.CASCADE, related_name="eventDates"
+    )
+
+    def __str__(self):
+        return f"Date: {self.date} | Linked to event {self.event.id}"
+
+
+class Day(models.Model):
+    """
+    Day table - stores day of week associated to an event.
+
+    @id: auto generated
+
+    @day: from input form (if any)
+
+    @event: id of event
+    """
+
+    id = models.CharField(primary_key=True, db_index=True, default=uuid4())
+    day = models.DateField(max_length=100, blank=True, null=True)
+    event = models.ForeignKey(Event, on_delete=models.CASCADE, related_name="eventDays")
+
+    def __str__(self):
+        return f"Day: {self.day} | Linked to event {self.event.id}"
+
+    class Meta:
+        """
+        Constraint: validate that `day` value is a valid day of week.
+        """
+
+        models.CheckConstraint(
+            check=models.Q(day="Monday")
+            | models.Q(day="Tuesday")
+            | models.Q(day="Wednesday")
+            | models.Q(day="Thursday")
+            | models.Q(day="Friday")
+            | models.Q(day="Saturday")
+            | models.Q(day="Sunday"),
+            name="day-of-week constraint",
+            violation_error_message="Day must be a valid day of week",
+        ),
 
 
 class Respondent(models.Model):
@@ -74,39 +135,19 @@ class Respondent(models.Model):
     @participatedEvent: id of event
     """
 
-    id = models.CharField(primary_key=True, db_index=True)
+    id = models.CharField(primary_key=True, db_index=True, default=uuid4())
+
     name = models.CharField(max_length=100, null=False, blank=False)
-    isGuest = models.BooleanField(null=False, blank=False)
-    eventRespondent = models.ForeignKey(
-        Event, on_delete=models.CASCADE, related_name="eventRespondent"
+
+    # new respondent added to an event is by default guest user
+    isGuestRespondent = models.BooleanField(null=False, blank=False, default=True)
+
+    respondentEvent = models.ForeignKey(
+        Event, on_delete=models.CASCADE, related_name="respondentEvent"
     )
 
     def __str__(self):
-        return self.name
-
-
-class Date(models.Model):
-    """
-    Date table
-
-    @id: auto generated
-
-    @date: from input form (if any)
-
-    @dayOfWeek: from input form (if any)
-
-    @event: id of event
-    """
-
-    id = models.CharField(primary_key=True, db_index=True)
-    date = models.DateField(max_length=100, default="1900-01-01", blank=True, null=True)
-    dayOfWeek = models.CharField(max_length=100, default="", blank=True, null=True)
-    event = models.ForeignKey(
-        Event, on_delete=models.CASCADE, related_name="eventDates"
-    )
-
-    def __str__(self):
-        return f"dateId: {self.id}"
+        return f"Respondenet name: {self.name}"
 
 
 class Availability(models.Model):
@@ -117,14 +158,14 @@ class Availability(models.Model):
 
     @time: timestamp of selected availability timeslot
 
-    @respondenete: id of respondent
+    @respondent: respondent details
     """
 
-    id = models.CharField(primary_key=True, db_index=True)
-    time = models.CharField()
-    respondent = models.ForeignKey(
-        Respondent, on_delete=models.CASCADE, related_name="respondent"
+    id = models.CharField(primary_key=True, db_index=True, default=uuid4())
+    time = models.CharField(null=False, blank=False)
+    respondentAvailability = models.ForeignKey(
+        Respondent, on_delete=models.CASCADE, related_name="respondentAvailability"
     )
 
     def __str__(self):
-        return f"userId: {self.id} | time: {self.time}"
+        return f"Respondent name: {self.respondent.name} | time: {self.time}"
