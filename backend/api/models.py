@@ -4,6 +4,7 @@ Database models
 
 from django.db import models
 from uuid import uuid4
+from django.core.validators import RegexValidator
 
 
 class Event(models.Model):
@@ -53,13 +54,44 @@ class Event(models.Model):
         choices=EventType.choices, default=1, blank=False, null=False
     )
 
-    start_time_utc = models.CharField(max_length=200, null=False, blank=False)
-    end_time_utc = models.CharField(max_length=200, null=False, blank=False)
+    start_time_utc = models.CharField(
+        default="09:00"
+        max_length=200,
+        null=False,
+        blank=False,
+        validators=[
+            RegexValidator(
+                regex="(0[0-9]{1}|1[0-9]{1}|2[0-3]{1}):00$",
+                message="Valid time should end with '00'",
+            ),
+        ],
+    )
+    end_time_utc = models.CharField(
+        default="10:00"
+        max_length=200,
+        null=False,
+        blank=False,
+        validators=[
+            RegexValidator(
+                regex="(0[0-9]{1}|1[0-9]{1}|2[0-3]{1}):00$",
+                message="Valid time should end with '00'",
+            ),
+        ],
+    )
     created_at_utc = models.DateTimeField(auto_now_add=True)
     updated_at_utc = models.DateTimeField(auto_now=True)
 
     def __str__(self):
         return f"Event id: {self.id} | Event name: {self.name}"
+
+    class Meta:
+        constraints = [
+            models.CheckConstraint(
+                check=models.Q(type=1) | models.Q(type=2),
+                name="Type constraint",
+                violation_error_message="Integer type must be either 1 or 2.",
+            )
+        ]
 
 
 class Date(models.Model):
