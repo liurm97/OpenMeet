@@ -5,6 +5,7 @@ Database models
 from django.db import models
 from uuid import uuid4
 from django.core.validators import RegexValidator
+from django.core.validators import MinLengthValidator
 
 
 class Event(models.Model):
@@ -55,7 +56,7 @@ class Event(models.Model):
     )
 
     start_time_utc = models.CharField(
-        default="09:00"
+        default="09:00",
         max_length=200,
         null=False,
         blank=False,
@@ -67,7 +68,7 @@ class Event(models.Model):
         ],
     )
     end_time_utc = models.CharField(
-        default="10:00"
+        default="10:00",
         max_length=200,
         null=False,
         blank=False,
@@ -78,6 +79,7 @@ class Event(models.Model):
             ),
         ],
     )
+
     created_at_utc = models.DateTimeField(auto_now_add=True)
     updated_at_utc = models.DateTimeField(auto_now=True)
 
@@ -106,7 +108,17 @@ class Date(models.Model):
     """
 
     id = models.CharField(primary_key=True, db_index=True, default=uuid4())
-    date = models.DateField(max_length=100, blank=True, null=True)
+    date = models.DateField(
+        max_length=100,
+        blank=True,
+        null=True,
+        validators=[
+            RegexValidator(
+                regex=r"^\d{4}\-(0[1-9]|1[012])\-(0[1-9]|[12][0-9]|3[01])$",
+                message="Invalid date format. Must be YYYY-mm-dd",
+            )
+        ],
+    )
     event = models.ForeignKey(
         Event, on_delete=models.CASCADE, related_name="eventDates"
     )
@@ -127,7 +139,7 @@ class Day(models.Model):
     """
 
     id = models.CharField(primary_key=True, db_index=True, default=uuid4())
-    day = models.DateField(max_length=100, blank=True, null=True)
+    day = models.CharField(max_length=100, blank=True, null=True)
     event = models.ForeignKey(Event, on_delete=models.CASCADE, related_name="eventDays")
 
     def __str__(self):
@@ -138,17 +150,19 @@ class Day(models.Model):
         Constraint: validate that `day` value is a valid day of week.
         """
 
-        models.CheckConstraint(
-            check=models.Q(day="Monday")
-            | models.Q(day="Tuesday")
-            | models.Q(day="Wednesday")
-            | models.Q(day="Thursday")
-            | models.Q(day="Friday")
-            | models.Q(day="Saturday")
-            | models.Q(day="Sunday"),
-            name="day-of-week constraint",
-            violation_error_message="Day must be a valid day of week",
-        ),
+        constraints = [
+            models.CheckConstraint(
+                check=models.Q(day="Monday")
+                | models.Q(day="Tuesday")
+                | models.Q(day="Wednesday")
+                | models.Q(day="Thursday")
+                | models.Q(day="Friday")
+                | models.Q(day="Saturday")
+                | models.Q(day="Sunday"),
+                name="day-of-week constraint",
+                violation_error_message="Day must be a valid day of week",
+            )
+        ]
 
 
 class Respondent(models.Model):
@@ -169,7 +183,15 @@ class Respondent(models.Model):
 
     id = models.CharField(primary_key=True, db_index=True, default=uuid4())
 
-    name = models.CharField(max_length=100, null=False, blank=False)
+    name = models.CharField(
+        max_length=100,
+        null=False,
+        blank=False,
+        validators=[
+            MinLengthValidator(1),
+            RegexValidator(regex=r"^(?!\s*$).+", message="name cannot be empty."),
+        ],
+    )
 
     # new respondent added to an event is by default guest user
     isGuestRespondent = models.BooleanField(null=False, blank=False, default=True)
