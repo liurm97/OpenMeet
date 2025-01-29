@@ -216,10 +216,21 @@ class Availability(models.Model):
     """
 
     id = models.CharField(primary_key=True, db_index=True, default=uuid4())
-    time = models.CharField(null=False, blank=False)
+    time = models.CharField(
+        null=False,
+        blank=False,
+        validators=[
+            RegexValidator(
+                regex=r"(0[0-9]{1}|1[0-9]{1}|2[0-3]{1}):00$|(0[0-9]{1}|1[0-9]{1}|2[0-3]{1}):30$",
+                message="Valid availability time must be one of the following formats - 09:00 or 09:30",
+            )
+        ],
+    )
     respondentAvailability = models.ForeignKey(
         Respondent, on_delete=models.CASCADE, related_name="respondentAvailability"
     )
 
     def __str__(self):
-        return f"Respondent name: {self.respondent.name} | time: {self.time}"
+        return (
+            f"Respondent name: {self.respondentAvailability.name} | time: {self.time}"
+        )

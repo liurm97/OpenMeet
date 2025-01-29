@@ -12,7 +12,7 @@ from django.db.transaction import TransactionManagementError
 
 class RespondentModelTests(TestCase):
     """
-    Test for Date model
+    Test for Respondent model
     """
 
     valid_create_event_payload = {
