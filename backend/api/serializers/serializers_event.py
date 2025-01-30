@@ -2,11 +2,75 @@
 Serializer for Event API
 """
 
+from django.forms import CharField
 from rest_framework import serializers
 from ..models import Event, Availability, Date, Day, Respondent
 from datetime import datetime
 from uuid import uuid4
 from django.core.validators import RegexValidator
+from copy import deepcopy
+
+
+class DaySerializer(serializers.Serializer):
+    day = serializers.CharField()
+
+
+class DateSerializer(serializers.Serializer):
+    date = serializers.CharField()
+
+
+class CreateEventRequestBodySerializer(serializers.Serializer):
+    """
+    Serializer for Create Event to validate acceptable request body fields are passed in
+    """
+
+    name = serializers.CharField()
+    owner = serializers.CharField(required=False)
+    type = serializers.IntegerField()
+    start_time_utc = serializers.CharField(
+        validators=[
+            RegexValidator(
+                regex="(0[0-9]{1}|1[0-9]{1}|2[0-3]{1}):00$",
+                message="Please format in hh:mm. It should end with '00'",
+            ),
+        ],
+    )
+    end_time_utc = serializers.CharField(
+        validators=[
+            RegexValidator(
+                regex="(0[0-9]{1}|1[0-9]{1}|2[0-3]{1}):00$",
+                message="Please format in hh:mm. It should end with '00'",
+            ),
+        ],
+    )
+    eventDates = DateSerializer(many=True, required=False)
+    eventDays = DaySerializer(many=True, required=False)
+
+    class Meta:
+        fields = [
+            "name",
+            "owner",
+            "type",
+            "start_time_utc",
+            "end_time_utc",
+            "eventDates",
+            "eventDays",
+        ]
+
+    def validate(self, data):
+        valid_field_one = CreateEventRequestBodySerializer.Meta.fields.copy()
+        valid_field_one.remove("eventDates")
+
+        valid_field_two = CreateEventRequestBodySerializer.Meta.fields.copy()
+        valid_field_two.remove("eventDays")
+
+        if (
+            list(data.keys()) != valid_field_one
+            and list(data.keys()) != valid_field_two
+        ):
+            raise serializers.ValidationError("Request payload contains invalid field.")
+
+        return data
 
 
 class CreateEventSerializer(serializers.ModelSerializer):
@@ -60,7 +124,7 @@ class CreateEventSerializer(serializers.ModelSerializer):
         """
         If request payload is validated, create Event resource
         """
-        print("in Serializer create")
+        print(f"CreateEventSerializer:: validated_data:: {validated_data}")
         # if owner is passed in:
         if "owner" in validated_data.keys():
             owner = validated_data["owner"]
@@ -82,6 +146,10 @@ class CreateEventSerializer(serializers.ModelSerializer):
         )
         event_obj.save()
         return event_obj
+
+
+class GetSpecificEventSerializer(serializers.Serializer):
+    pass
 
 
 # class ListAllEventSerializer(serializers.ModelSerializer):

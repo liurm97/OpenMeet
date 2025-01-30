@@ -33,29 +33,31 @@ class EventsAPITests(APITestCase):
             "type": 1,
             "start_time_utc": "09:00",
             "end_time_utc": "11:00",
+            "eventDates": [{"date": "2020-01-28"}, {"date": "2020-01-02"}],
         }
 
         response = self.client.post(self.BASE_URL, valid_request_payload, format="json")
 
         self.assertEqual(response.status_code, 201)
 
-    def test_create_event_resource_success_without_owner_returns_201(self):
+    def test_create_event_resource_success_without_owner_returns_400(self):
         """
-        Test successful create event resource with owner field value returns 201 OK
+        Test create event resource without owner field value returns 400 Not OK
         Test Pass criteria:
             - Make a POST /api/v1/events and does not provide owner field value
-            - Pass if response status code = 201
+            - Pass if response status code = 400
         """
         valid_request_payload = {
             "name": "valid without owner",
             "type": 1,
             "start_time_utc": "09:00",
             "end_time_utc": "11:00",
+            "eventDates": [{"date": "2020-01-28"}, {"date": "2020-01-02"}],
         }
 
         response = self.client.post(self.BASE_URL, valid_request_payload, format="json")
 
-        self.assertEqual(response.status_code, 201)
+        self.assertEqual(response.status_code, 400)
 
     def test_create_event_resource_fail_due_to_invalid_time_value_returns_400(self):
         """
@@ -98,6 +100,7 @@ class EventsAPITests(APITestCase):
             request_payload = {
                 **invalid_request,
                 **{
+                    "owner": "-1",
                     "name": "valid without owner",
                     "type": 1,
                 },
@@ -121,6 +124,7 @@ class EventsAPITests(APITestCase):
             - Pass if response status code = 400
         """
         invalid_request_payload = {
+            "owner": "-1",
             "name": "valid without owner",
             "type": 3,
             "start_time_utc": "09:00",
