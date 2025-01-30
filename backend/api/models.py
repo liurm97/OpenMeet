@@ -51,9 +51,7 @@ class Event(models.Model):
 
     name = models.CharField(max_length=200, null=False, blank=False)
 
-    type = models.IntegerField(
-        choices=EventType.choices, default=1, blank=False, null=False
-    )
+    type = models.IntegerField(choices=EventType.choices, blank=False, null=False)
 
     start_time_utc = models.CharField(
         default="09:00",
@@ -63,7 +61,7 @@ class Event(models.Model):
         validators=[
             RegexValidator(
                 regex="(0[0-9]{1}|1[0-9]{1}|2[0-3]{1}):00$",
-                message="Valid time should end with '00'",
+                message="Please format in hh:mm. It should end with '00'",
             ),
         ],
     )
@@ -75,7 +73,7 @@ class Event(models.Model):
         validators=[
             RegexValidator(
                 regex="(0[0-9]{1}|1[0-9]{1}|2[0-3]{1}):00$",
-                message="Valid time should end with '00'",
+                message="Please format in hh:mm. It should end with '00'",
             ),
         ],
     )

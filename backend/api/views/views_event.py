@@ -4,7 +4,7 @@ Views for Events
 
 # models and serializers
 from ..models import Event, Date, Day, Respondent, Availability
-from ..serializers import ListAllEventSerializer, ListEventSerializer
+from ..serializers.serializers_event import CreateEventSerializer
 
 # django libraries
 from django.http import JsonResponse
@@ -26,81 +26,28 @@ class CreateEventView(APIView):
     View to create new event
     """
 
-    def validate_postResourcesValidParams(self, data: dict):
-        """
-        Validate that accepted optional parameter.
-        Fail if any thing other than 'type', 'url', 'csrfmiddlewaretoken'  is used.
-        """
-        ACCEPTABLE_PARAMS = ["type", "url", "csrfmiddlewaretoken"]
-        provided_param_keys: list[str] = list(data.keys())
-        unacceptable_params = []
-
-        for provided_param_key in provided_param_keys:
-            if provided_param_key not in ACCEPTABLE_PARAMS:
-                unacceptable_params.append(provided_param_key)
-
-        if len(unacceptable_params) > 0:
-            return unacceptable_params, False, "Invalid Params"
-
-        return None, True, None
-
     def post(self, request, format=None):
-        unaccepted_params, isValidParams, resourceValidParamsReason = (
-            self.validate_postResourcesValidParams(request.data)
-        )
-
-        if not isValidParams:
-            return JsonResponse(
-                {
-                    "message": f"You have passed in invalid field: ({', '.join(unaccepted_params)})",
-                    "reason": resourceValidParamsReason,
-                },
-                status=status.HTTP_400_BAD_REQUEST,
-            )
-
-        serializer = CreateResourceRequestBodySerializer(data=request.data)
+        print(f"request.data:: {request.data}")
+        serializer = CreateEventSerializer(data=request.data)
 
         if serializer.is_valid():
+            print("valid")
             try:
+                print("in try statement")
                 serializer.save()
-                return Response(serializer.data, status=status.HTTP_201_CREATED)
+                print(f"after save serializer.data:: {serializer.data}")
+                return Response(
+                    serializer.validated_data, status=status.HTTP_201_CREATED
+                )
 
             except Exception as e:
                 return Response(
-                    "Something wrong happened. Please try again.",
+                    f"Something wrong happened. Please try again.\n{e}",
                     status=status.HTTP_500_INTERNAL_SERVER_ERROR,
                 )
         else:
+            print("not valid")
             return Response(
                 serializer.errors,
-                status=status.HTTP_400_BAD_REQUEST,
-            )
-
-
-@api_view(["GET", "POST"])
-def get_all_or_create_event(request):
-    """
-    View to get all events or create an event
-    """
-    if request.method == "GET":
-        events = Event.objects.all()
-        serializer = ListAllEventSerializer(events, many=True)
-        return JsonResponse({"data": serializer.data}, status=200)
-
-    elif request.method == "POST":
-        data = request.data
-        print(f"data:: {data}")
-        serializer = ListAllEventSerializer(
-            data=data,
-        )
-        if serializer.is_valid():
-            print(f"serializer.validated_data:: {serializer.validated_data}")
-            serializer.save()
-            return JsonResponse(
-                {"status": 200, "data": serializer.data}, status=status.HTTP_201_CREATED
-            )
-        else:
-            return JsonResponse(
-                {"status": 400, "data": serializer.errors},
                 status=status.HTTP_400_BAD_REQUEST,
             )
