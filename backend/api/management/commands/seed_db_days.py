@@ -20,7 +20,7 @@ class Command(BaseCommand):
         "type": 2,
         "start_time_utc": "09:00",
         "end_time_utc": "11:00",
-        "eventDates": [{"day": "Monday"}, {"day": "Wednesday"}],
+        "eventDays": [{"day": "Monday"}, {"day": "Wednesday"}],
     }
 
     respondent_payload = [
@@ -57,22 +57,22 @@ class Command(BaseCommand):
     ]
 
     def handle(self, *args: Any, **options: Any) -> str | None:
-        date_objects: list[object] = self.event_payload["eventDates"]
-        self.event_payload.pop("eventDates")
+        day_objects: list[object] = self.event_payload["eventDays"]
+        self.event_payload.pop("eventDays")
 
         # 1. create Event
         created_event = Event.objects.create(**self.event_payload)
 
         # 2. create Dates related to an event
-        date_bulk_create_list = []
+        day_bulk_create_list = []
 
-        for date_object in date_objects:
-            date_unique_id = str(uuid4())
-            date_object["event"] = created_event
-            date_object["id"] = date_unique_id
-            date_bulk_create_list.append(Date(**date_object))
+        for day_object in day_objects:
+            day_unique_id = str(uuid4())
+            day_object["event"] = created_event
+            day_object["id"] = day_unique_id
+            day_bulk_create_list.append(Day(**day_object))
 
-        Date.objects.bulk_create(date_bulk_create_list)
+        Day.objects.bulk_create(day_bulk_create_list)
 
         # 3. create Respondents related to an event
         for respondent in self.respondent_payload:
