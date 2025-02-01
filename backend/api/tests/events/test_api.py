@@ -4,11 +4,12 @@ Test Events APIs
 
 from django.test import TestCase, SimpleTestCase
 from rest_framework.test import RequestsClient, APITestCase
+from django.core.management import call_command
 from rest_framework import status
 from uuid import uuid4
 
-# from django.core.management import call_command
-# from ...scripts.seed_db_script import seed_students_and_responses_db, seed_resources_db
+from ...scripts.orm_script import seed_db_dates
+from ...models import Event
 
 
 class EventsAPITests(APITestCase):
@@ -17,6 +18,12 @@ class EventsAPITests(APITestCase):
     """
 
     BASE_URL = "http://127.0.0.1:8000/api/v1/events"
+
+    def setUp(self) -> None:
+        seed_db_dates()
+
+    def tearDown(self) -> None:
+        Event.objects.all().delete()
 
     def test_create_event_resource_success_with_owner_returns_201(self):
         """
@@ -42,7 +49,7 @@ class EventsAPITests(APITestCase):
 
         self.assertEqual(response.status_code, 201)
 
-    def test_create_event_resource_success_without_owner_returns_400(self):
+    def test_create_event_resource_without_owner_returns_400(self):
         """
         Test create event resource without owner field value returns 400 Not OK
         Test Pass criteria:
@@ -138,3 +145,44 @@ class EventsAPITests(APITestCase):
         )
 
         self.assertEqual(response.status_code, 400)
+
+    def test_get_event_by_eventid_success_return_200(self):
+        """
+        Test get specific event by event_id returns all required fields
+        Test Pass criteria:
+            - Make a GET /api/v1/events/<event_id>
+            - Pass if response status code = 200
+        """
+        valid_event_id = Event.objects.all().first().id
+
+        response = self.client.get(f"{self.BASE_URL}/{valid_event_id}", format="json")
+
+        self.assertEqual(response.status_code, 200)
+
+    def test_get_event_by_invalid_eventid_returns_400(self):
+        """
+        Test get specific event using event_id that is not UUID type returns 400
+        Test Pass criteria:
+            - Make a GET /api/v1/events/<event_id> using invalid event_id
+            - Pass if response status code = 400
+        """
+        invalid_event_id = "123456"
+
+        response = self.client.get(f"{self.BASE_URL}/{invalid_event_id}", format="json")
+
+        self.assertEqual(response.status_code, 400)
+
+    def test_get_event_by_incorrect_eventid_returns_404(self):
+        """
+        Test get specific event using event_id that does not exist returns 404
+        Test Pass criteria:
+            - Make a GET /api/v1/events/<event_id> using incorrect event_id
+            - Pass if response status code = 404
+        """
+        incorrect_event_id = "914db599-468f-4477-b0a5-ac8c09ea350d"
+
+        response = self.client.get(
+            f"{self.BASE_URL}/{incorrect_event_id}", format="json"
+        )
+
+        self.assertEqual(response.status_code, 404)

@@ -38,7 +38,6 @@ class CreateEventView(APIView):
         if requestBodySerializer.is_valid():
 
             data = request.data
-            print(f"request.data:: {data}")
             serializer = CreateEventSerializer(data=data)
 
             try:
@@ -46,18 +45,13 @@ class CreateEventView(APIView):
 
                 # if Event payload is valid
                 if serializer.is_valid():
-                    print("valid")
-
                     # create event
                     created_event = serializer.save()
-                    print(f"created_event:: {created_event}")
 
                     created_event_id = created_event.id
-                    print(f"created_event_id:: {created_event_id}")
 
                     # get `type` field value
                     type = data["type"]
-                    print(f"type:: {type}")
 
                     # if `type` = 1, serialize and validate Date payload
                     if type == 1:
@@ -95,7 +89,6 @@ class CreateEventView(APIView):
                         daySerializer.context["created_event"] = created_event
 
                         if daySerializer.is_valid():
-                            print("dateSerializer is valid")
                             daySerializer.save()
 
                             return Response(
@@ -111,7 +104,6 @@ class CreateEventView(APIView):
                 # Serialize and validate Event specific payload
                 # if Event payload is NOT valid
                 else:
-                    print("not valid")
                     return Response(
                         serializer.errors,
                         status=status.HTTP_400_BAD_REQUEST,
@@ -119,11 +111,10 @@ class CreateEventView(APIView):
 
             except Exception as e:
                 return Response(
-                    f"Something wrong happened. Please try again.\n{e}",
+                    f"Something wrong happened. Please try again.\nError:{e}",
                     status=status.HTTP_500_INTERNAL_SERVER_ERROR,
                 )
         else:
-            print(requestBodySerializer.errors)
             return Response(
                 requestBodySerializer.errors,
                 status=status.HTTP_400_BAD_REQUEST,
@@ -164,11 +155,12 @@ class GetSpecificEventView(APIView):
     def get(self, request, event_id, format=None):
 
         # verify event_id is valid UUID
-        serializer = GetSpecificEventRequestSerializer(data={"event_id": event_id})
+        request_serializer = GetSpecificEventRequestSerializer(
+            data={"event_id": event_id}
+        )
 
         # if event_id is valid UUID
-        if serializer.is_valid():
-            print(serializer.validated_data)
+        if request_serializer.is_valid():
 
             try:
                 # check to see if event_id exists
@@ -178,20 +170,20 @@ class GetSpecificEventView(APIView):
                 start_time_utc = result.start_time_utc
                 end_time_utc = result.end_time_utc
 
-                # query Respondent table by respondentEvent.id == <event_id>
+                # get related respondents of an event
                 event_respondents: list[object] = (
                     Respondent.objects.select_related("respondentEvent")
                     .filter(respondentEvent_id=event_id)
                     .values("id", "name", "isGuestRespondent")
                 )
 
+                # get availability of all respondents of an event
                 event_respondents_availabilities = []
 
                 # loop through all respondents in a single event
                 for respondent in event_respondents:
                     id = respondent["id"]
                     name = respondent["name"]
-                    print(f"respondent id {id} name {name}")
 
                     # get availability time for each respondent in a single event
                     respondents_availabilities = (
@@ -207,8 +199,9 @@ class GetSpecificEventView(APIView):
                         }
                     )
 
+                # get specific_dates
                 if type == 1:
-                    # query Date table by event.id == <event_id>
+                    # get related dates of an event
                     event_dates = (
                         Date.objects.select_related("event")
                         .filter(event_id=event_id)
@@ -216,23 +209,20 @@ class GetSpecificEventView(APIView):
                         .values("date")
                     )
 
-                    return Response(
-                        {
-                            "id": event_id,
-                            "owner": owner,
-                            "type": type,
-                            "start_time_utc": start_time_utc,
-                            "end_time_utc": end_time_utc,
-                            "event_respondents": event_respondents,
-                            "event_dates": event_dates,
-                            "event_availabilities": event_respondents_availabilities,
-                        },
-                        status=status.HTTP_200_OK,
-                    )
+                    response_data = {
+                        "id": event_id,
+                        "owner": owner,
+                        "type": type,
+                        "start_time_utc": start_time_utc,
+                        "end_time_utc": end_time_utc,
+                        "event_respondents": event_respondents,
+                        "event_dates": event_dates,
+                        "event_availabilities": event_respondents_availabilities,
+                    }
 
-                # 3.1.2 query Respondent table by respondentEvent.id == <event_id>
-
+                # get day_of_weeks
                 if type == 2:
+                    # get related days of an event
                     event_days = (
                         Day.objects.select_related("event")
                         .filter(event_id=event_id)
@@ -240,19 +230,22 @@ class GetSpecificEventView(APIView):
                         .values("day")
                     )
 
-                    return Response(
-                        {
-                            "id": event_id,
-                            "owner": owner,
-                            "type": type,
-                            "start_time_utc": start_time_utc,
-                            "end_time_utc": end_time_utc,
-                            "event_respondents": event_respondents,
-                            "event_days": event_days,
-                            "event_availabilities": event_respondents_availabilities,
-                        },
-                        status=status.HTTP_200_OK,
-                    )
+                    response_data = {
+                        "id": event_id,
+                        "owner": owner,
+                        "type": type,
+                        "start_time_utc": start_time_utc,
+                        "end_time_utc": end_time_utc,
+                        "event_respondents": event_respondents,
+                        "event_days": event_days,
+                        "event_availabilities": event_respondents_availabilities,
+                    }
+
+                    # Check that response data has the required fields and field values
+                return Response(
+                    response_data,
+                    status=status.HTTP_200_OK,
+                )
 
             except Exception:
                 return Response(
@@ -262,29 +255,6 @@ class GetSpecificEventView(APIView):
 
         else:
             return Response(
-                f"{event_id} is not a valid UUID", status=status.HTTP_400_BAD_REQUEST
+                f"Event id {event_id} is not a valid event_id",
+                status=status.HTTP_400_BAD_REQUEST,
             )
-
-    #     return Response("success")
-
-    # if serializer.is_valid():
-    #     print("valid")
-    #     try:
-    #         print("in try statement")
-    #         serializer.save()
-    #         print(f"after save serializer.data:: {serializer.data}")
-    #         return Response(
-    #             serializer.validated_data, status=status.HTTP_201_CREATED
-    #         )
-
-    #     except Exception as e:
-    #         return Response(
-    #             f"Something wrong happened. Please try again.\n{e}",
-    #             status=status.HTTP_500_INTERNAL_SERVER_ERROR,
-    #         )
-    # else:
-    #     print("not valid")
-    #     return Response(
-    #         serializer.errors,
-    #         status=status.HTTP_400_BAD_REQUEST,
-    #     )
