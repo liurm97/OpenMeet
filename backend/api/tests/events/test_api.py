@@ -27,7 +27,9 @@ class EventsAPITests(APITestCase):
         """
 
         owner_value = str(uuid4())
+        event_id = str(uuid4())
         valid_request_payload = {
+            "id": event_id,
             "owner": owner_value,
             "name": "valid with owner 2",
             "type": 1,

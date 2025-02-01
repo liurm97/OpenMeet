@@ -19,13 +19,13 @@ class DateSerializer(serializers.Serializer):
     date = serializers.CharField()
 
 
-class CreateEventRequestBodySerializer(serializers.Serializer):
+class CreateEventRequestBodyFieldSerializer(serializers.Serializer):
     """
     Serializer for Create Event to validate acceptable request body fields are passed in
     """
 
     name = serializers.CharField()
-    owner = serializers.CharField(required=False)
+    owner = serializers.CharField(required=True)
     type = serializers.IntegerField()
     start_time_utc = serializers.CharField(
         validators=[
@@ -58,10 +58,10 @@ class CreateEventRequestBodySerializer(serializers.Serializer):
         ]
 
     def validate(self, data):
-        valid_field_one = CreateEventRequestBodySerializer.Meta.fields.copy()
+        valid_field_one = CreateEventRequestBodyFieldSerializer.Meta.fields.copy()
         valid_field_one.remove("eventDates")
 
-        valid_field_two = CreateEventRequestBodySerializer.Meta.fields.copy()
+        valid_field_two = CreateEventRequestBodyFieldSerializer.Meta.fields.copy()
         valid_field_two.remove("eventDays")
 
         if (
@@ -78,7 +78,8 @@ class CreateEventSerializer(serializers.ModelSerializer):
     Serializer for Create Event based on Event model
     """
 
-    id = serializers.CharField(read_only=True)
+    id = serializers.CharField(required=True)
+    owner = serializers.CharField(required=True)
     name = serializers.CharField(required=True)
     type = serializers.IntegerField(required=True)
     start_time_utc = serializers.CharField(
@@ -136,7 +137,15 @@ class CreateEventSerializer(serializers.ModelSerializer):
         type = validated_data["type"]
         start_time_utc = validated_data["start_time_utc"]
         end_time_utc = validated_data["end_time_utc"]
-        event_obj = Event(
+        # event_obj = Event(
+        #     id=unique_id_str,
+        #     owner=owner,
+        #     name=name,
+        #     type=type,
+        #     start_time_utc=start_time_utc,
+        #     end_time_utc=end_time_utc,
+        # )
+        created_event = Event.objects.create(
             id=unique_id_str,
             owner=owner,
             name=name,
@@ -144,11 +153,25 @@ class CreateEventSerializer(serializers.ModelSerializer):
             start_time_utc=start_time_utc,
             end_time_utc=end_time_utc,
         )
-        event_obj.save()
-        return event_obj
+        return created_event
 
 
-class GetSpecificEventSerializer(serializers.Serializer):
+class GetSpecificEventRequestSerializer(serializers.Serializer):
+    """
+    Serializer for GET /events/<event_id> to verify that `event_id` is provided in parameter.
+    """
+
+    event_id = serializers.UUIDField(required=True)
+
+    class Meta:
+        fields = ["event_id"]
+
+
+class GetSpecificEventResponseSerializer(serializers.Serializer):
+    """
+    Serializer for GET /events/<event_id> to verify that the returned response data is valid.
+    """
+
     pass
 
 

@@ -39,23 +39,51 @@ class AvailabilityModelTests(TestCase):
         # create related event resource
         created_event = Event.objects.create(**self.valid_create_event_payload)
 
-        # create relateed respondent resource
-        created_respondent = Respondent.objects.create(
-            **self.valid_create_respondent_payload, **{"respondentEvent": created_event}
-        )
-        valid_create_availability_payload = {
-            "time": "09:00",
-            "respondentAvailability": created_respondent,
+        # create related respondent resource
+        respondent_obj = {
+            **self.valid_create_respondent_payload,
+            **{"respondentEvent": created_event},
         }
+        created_respondent = Respondent.objects.create(**respondent_obj)
 
-        Availability.objects.create(**valid_create_availability_payload)
-        num_event_records = len(Respondent.objects.all())
+        valid_create_availability_payloads = [
+            {
+                "time": "2020-01-28 09:00",
+                "respondentAvailability": created_respondent,
+            },
+            {
+                "time": "Monday 09:00",
+                "respondentAvailability": created_respondent,
+            },
+            {
+                "time": "Tuesday 09:00",
+                "respondentAvailability": created_respondent,
+            },
+            {
+                "time": "Sunday 09:00",
+                "respondentAvailability": created_respondent,
+            },
+        ]
 
-        self.assertEqual(num_event_records, 1)
+        bulk_create_payloads = []
+        for payload in valid_create_availability_payloads:
+            availability_unique_id = str(uuid4())
+            payload["id"] = availability_unique_id
+            bulk_create_payloads.append(Availability(**payload))
 
-    def test_create_respondent_resource_invalid_name_value_should_fail(self):
+        created_availabilities = Availability.objects.bulk_create(bulk_create_payloads)
+
+        for created_availability in created_availabilities:
+            if created_availability.full_clean():
+                created_availability.save()
+
+        num_event_records = len(Availability.objects.all())
+
+        self.assertEqual(num_event_records, len(valid_create_availability_payloads))
+
+    def test_create_availability_resource_invalid_name_value_should_fail(self):
         """
-        Test insert respondent record with invalid time value should fail
+        Test insert availability record with invalid time value should fail
         Test Pass criteria:
             - Test time = invalid times that follow neither of the following formats - hh:00 or hh:30
             - Creating new availability resource raises ValidationError

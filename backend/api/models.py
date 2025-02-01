@@ -209,6 +209,16 @@ class Availability(models.Model):
     @id: auto generated
 
     @time: timestamp of selected availability timeslot
+    Accepts:
+    - yyyy/mm/dd hh:00 or hh:30
+    - Monday hh:00 or hh:30
+    - Tuesday hh:00 or hh:30
+    - Wednesday hh:00 or hh:30
+    - Thursday hh:00 or hh:30
+    - Friday hh:00 or hh:30
+    - Saturday hh:00 or hh:30
+    - Sunday hh:00 or hh:30
+
 
     @respondent: respondent details
     """
@@ -219,8 +229,8 @@ class Availability(models.Model):
         blank=False,
         validators=[
             RegexValidator(
-                regex=r"(0[0-9]{1}|1[0-9]{1}|2[0-3]{1}):00$|(0[0-9]{1}|1[0-9]{1}|2[0-3]{1}):30$",
-                message="Valid availability time must be one of the following formats - 09:00 or 09:30",
+                regex=r"((Monday|Tuesday|Wednesday|Thursday|Friday|Saturday|Sunday)|^\d{4}\-(0[1-9]|1[012])\-(0[1-9]|[12][0-9]|3[01]))\s(0[0-9]{1}|1[0-9]{1}|2[0-3]{1}):00$|(0[0-9]{1}|1[0-9]{1}|2[0-3]{1}):30$",
+                message="Valid availability time must be one of the following formats - [yyyy-mm-dd hh:00 or hh:30] or [day_of_week hh:00 or hh:30] ",
             )
         ],
     )
