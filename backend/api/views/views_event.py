@@ -3,6 +3,7 @@ Views for Events
 """
 
 # models and serializers
+from ..helpers import validate_auth_token
 from ..serializers.serializers_day import DaySerializer
 from ..models import Event, Date, Day, Respondent, Availability
 from ..serializers.serializers_event import (
@@ -26,6 +27,8 @@ from rest_framework.views import APIView
 # other libraries
 from uuid import uuid4
 
+from ..auth_tokens import UNAUTHENTICATED_USER_AUTH_TOKEN
+
 
 class CreateEventView(APIView):
     """
@@ -33,7 +36,12 @@ class CreateEventView(APIView):
     """
 
     def post(self, request, format=None):
-        # serialize and validate fields in request body
+
+        if validate_auth_token(request) == False:
+            return Response(
+                "Please provide a valid token", status=status.HTTP_401_UNAUTHORIZED
+            )  # serialize and validate fields in request body
+
         requestBodySerializer = CreateEventRequestBodyFieldSerializer(data=request.data)
         if requestBodySerializer.is_valid():
 
@@ -154,6 +162,11 @@ class GetSpecificEventView(APIView):
 
     def get(self, request, event_id, format=None):
 
+        if validate_auth_token(request) == False:
+            return Response(
+                "Please provide a valid token", status=status.HTTP_401_UNAUTHORIZED
+            )
+
         # verify event_id is valid UUID
         request_serializer = GetSpecificEventRequestSerializer(
             data={"event_id": event_id}
@@ -258,3 +271,34 @@ class GetSpecificEventView(APIView):
                 f"Event id {event_id} is not a valid event_id",
                 status=status.HTTP_400_BAD_REQUEST,
             )
+
+
+class UpdateSpecificEventView(APIView):
+    """
+    View to update existing event
+
+    Pre-requisite:
+
+        - IF event was created by signed-in user, event can only be updated by signed-in user (owner).
+
+        - ELSE, event can be updated by anyone.
+
+        ** Note: Only the following event fields can be updated **
+
+        - Event name
+
+        - Event start time (i.e extend start time)
+
+        - Event end time (i.e shorten end time)
+    """
+
+    def patch(self, request, event_id):
+        pass
+
+        # check that event_id is valid
+
+        # get owner of the event
+
+        # if owner = -1 -> OK to update
+
+        # if owner != -1 -> get current user_id of currently signed_in user -> if user_id of current sign_in owner = owner_id -> OK to update

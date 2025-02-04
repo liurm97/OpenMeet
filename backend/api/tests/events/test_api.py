@@ -44,17 +44,20 @@ class EventsAPITests(APITestCase):
             "end_time_utc": "11:00",
             "eventDates": [{"date": "2020-01-28"}, {"date": "2020-01-02"}],
         }
+        headers = {"Authorization": "1bc84a76-57f0-4678-82a0-9092c2edf8c5"}
 
-        response = self.client.post(self.BASE_URL, valid_request_payload, format="json")
+        response = self.client.post(
+            self.BASE_URL, valid_request_payload, headers=headers, format="json"
+        )
 
         self.assertEqual(response.status_code, 201)
 
-    def test_create_event_resource_without_owner_returns_400(self):
+    def test_create_event_resource_without_authorization_header_returns_401(self):
         """
-        Test create event resource without owner field value returns 400 Not OK
+        Test create event resource without authorization header returns 401
         Test Pass criteria:
-            - Make a POST /api/v1/events and does not provide owner field value
-            - Pass if response status code = 400
+            - Make a POST /api/v1/events and does not authorization header
+            - Pass if response status code = 401
         """
         valid_request_payload = {
             "name": "valid without owner",
@@ -66,6 +69,53 @@ class EventsAPITests(APITestCase):
 
         response = self.client.post(self.BASE_URL, valid_request_payload, format="json")
 
+        self.assertEqual(response.status_code, 401)
+
+    def test_create_event_resource_with_incorrect_authorization_token_value_returns_401(
+        self,
+    ):
+        """
+        Test create event resource with incorrect authorization token value returns 401
+        Test Pass criteria:
+            - Make a POST /api/v1/events and provide incorrect authorization token
+            - Pass if response status code = 401
+        """
+        valid_request_payload = {
+            "name": "valid without owner",
+            "type": 1,
+            "start_time_utc": "09:00",
+            "end_time_utc": "11:00",
+            "eventDates": [{"date": "2020-01-28"}, {"date": "2020-01-02"}],
+        }
+
+        invalid_header = {"Authorization": "123"}
+        response = self.client.post(
+            self.BASE_URL, valid_request_payload, headers=invalid_header, format="json"
+        )
+
+        self.assertEqual(response.status_code, 401)
+
+    def test_create_event_resource_without_owner_returns_400(self):
+        """
+        Test create event resource without owner field value returns 400 Not OK
+        Test Pass criteria:
+            - Make a POST /api/v1/events and does not provide owner field value
+            - Pass if response status code = 400
+        """
+        headers = {"Authorization": "1bc84a76-57f0-4678-82a0-9092c2edf8c5"}
+
+        valid_request_payload = {
+            "name": "valid without owner",
+            "type": 1,
+            "start_time_utc": "09:00",
+            "end_time_utc": "11:00",
+            "eventDates": [{"date": "2020-01-28"}, {"date": "2020-01-02"}],
+        }
+
+        response = self.client.post(
+            self.BASE_URL, valid_request_payload, headers=headers, format="json"
+        )
+
         self.assertEqual(response.status_code, 400)
 
     def test_create_event_resource_fail_due_to_invalid_time_value_returns_400(self):
@@ -75,6 +125,7 @@ class EventsAPITests(APITestCase):
             - Make a POST /api/v1/events and provide invalid start_time_utc/end_time_utc
             - Pass if response status code = 400
         """
+        headers = {"Authorization": "1bc84a76-57f0-4678-82a0-9092c2edf8c5"}
 
         invalid_time_request_payload = [
             {
@@ -115,7 +166,7 @@ class EventsAPITests(APITestCase):
                 },
             }
             response_status_code = self.client.post(
-                self.BASE_URL, request_payload, format="json"
+                self.BASE_URL, request_payload, format="json", headers=headers
             ).status_code
 
             if response_status_code == 400:
@@ -132,6 +183,9 @@ class EventsAPITests(APITestCase):
             - Make a POST /api/v1/events and provide type value = 3
             - Pass if response status code = 400
         """
+
+        headers = {"Authorization": "1bc84a76-57f0-4678-82a0-9092c2edf8c5"}
+
         invalid_request_payload = {
             "owner": "-1",
             "name": "valid without owner",
@@ -141,7 +195,7 @@ class EventsAPITests(APITestCase):
         }
 
         response = self.client.post(
-            self.BASE_URL, invalid_request_payload, format="json"
+            self.BASE_URL, invalid_request_payload, format="json", headers=headers
         )
 
         self.assertEqual(response.status_code, 400)
@@ -154,8 +208,11 @@ class EventsAPITests(APITestCase):
             - Pass if response status code = 200
         """
         valid_event_id = Event.objects.all().first().id
+        headers = {"Authorization": "1bc84a76-57f0-4678-82a0-9092c2edf8c5"}
 
-        response = self.client.get(f"{self.BASE_URL}/{valid_event_id}", format="json")
+        response = self.client.get(
+            f"{self.BASE_URL}/{valid_event_id}", headers=headers, format="json"
+        )
 
         self.assertEqual(response.status_code, 200)
 
@@ -168,7 +225,11 @@ class EventsAPITests(APITestCase):
         """
         invalid_event_id = "123456"
 
-        response = self.client.get(f"{self.BASE_URL}/{invalid_event_id}", format="json")
+        headers = {"Authorization": "1bc84a76-57f0-4678-82a0-9092c2edf8c5"}
+
+        response = self.client.get(
+            f"{self.BASE_URL}/{invalid_event_id}", headers=headers, format="json"
+        )
 
         self.assertEqual(response.status_code, 400)
 
@@ -180,9 +241,10 @@ class EventsAPITests(APITestCase):
             - Pass if response status code = 404
         """
         incorrect_event_id = "914db599-468f-4477-b0a5-ac8c09ea350d"
+        headers = {"Authorization": "1bc84a76-57f0-4678-82a0-9092c2edf8c5"}
 
         response = self.client.get(
-            f"{self.BASE_URL}/{incorrect_event_id}", format="json"
+            f"{self.BASE_URL}/{incorrect_event_id}", headers=headers, format="json"
         )
 
         self.assertEqual(response.status_code, 404)
