@@ -5,7 +5,7 @@ import { singleEventResponseDataType } from "@/types/type";
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 
-const UnAuthenticatedAvailabilityPage = () => {
+const AvailabilityPage = () => {
   const params = useParams();
   const navigate = useNavigate();
   const eventId = params.eventId;
@@ -31,4 +31,4 @@ const UnAuthenticatedAvailabilityPage = () => {
   );
 };
 
-export default UnAuthenticatedAvailabilityPage;
+export default AvailabilityPage;
