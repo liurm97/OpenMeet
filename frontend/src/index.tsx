@@ -1,7 +1,8 @@
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import "./index.css";
-import { ClerkProvider } from "@clerk/clerk-react";
+import { ClerkLoaded, ClerkProvider } from "@clerk/clerk-react";
+
 import App from "./App.tsx";
 
 // Entrypoint for React
@@ -13,7 +14,9 @@ const root = createRoot(document.getElementById("root")!);
 root.render(
   <StrictMode>
     <ClerkProvider publishableKey={PUBLISHABLE_KEY} afterSignOutUrl="/">
-      <App />
+      <ClerkLoaded>
+        <App />
+      </ClerkLoaded>
     </ClerkProvider>
   </StrictMode>
 );

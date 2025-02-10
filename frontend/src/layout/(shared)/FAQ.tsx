@@ -5,7 +5,11 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 
-const FAQ = () => {
+const FAQ = ({
+  faqRef,
+}: {
+  faqRef: React.MutableRefObject<HTMLDivElement | null>;
+}) => {
   {
     /* FAQ Section */
   }
@@ -25,7 +29,7 @@ const FAQ = () => {
                 others.
               </AccordionContent>
             </AccordionItem>
-            <AccordionItem value="feedback">
+            <AccordionItem value="feedback" ref={faqRef}>
               <AccordionTrigger>How can I provide feedback?</AccordionTrigger>
               <AccordionContent>
                 We welcome your feedback! You can reach out to our support team

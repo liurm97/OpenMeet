@@ -1,13 +1,19 @@
-import { Link } from "react-router-dom";
-
-const HowItWorksLink = () => {
+const HowItWorksLink = ({
+  howItWorksRef,
+}: {
+  howItWorksRef: React.MutableRefObject<HTMLDivElement | null>;
+}) => {
   return (
-    <Link
-      to="#how-it-works"
+    <button
       className="text-sm hover:text-gray-600 how-it-works"
+      onClick={() =>
+        howItWorksRef.current?.scrollIntoView({
+          behavior: "smooth",
+        })
+      }
     >
       How it works
-    </Link>
+    </button>
   );
 };
 

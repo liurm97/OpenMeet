@@ -1,10 +1,21 @@
-import { Link } from "react-router-dom";
-
-const FAQLink = () => {
+const FAQLink = ({
+  faqRef,
+}: {
+  faqRef: React.MutableRefObject<HTMLDivElement | null>;
+}) => {
   return (
-    <Link to="#faq" className="text-sm hover:text-gray-600">
+    <button
+      className="text-sm hover:text-gray-600"
+      onClick={() =>
+        faqRef.current?.scrollIntoView({
+          behavior: "smooth",
+          block: "start",
+          inline: "start",
+        })
+      }
+    >
       <span aria-label="span-FAQ">FAQ</span>
-    </Link>
+    </button>
   );
 };
 

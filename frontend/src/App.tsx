@@ -1,18 +1,10 @@
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
-import UnAuthenticatedHomePage from "./pages/(unauthenticated)/UnAuthenticatedHomePage";
 import ErrorPage from "./pages/(shared)/ErrorPage";
 import AvailabilityPage from "./pages/(shared)/AvailabilityPage";
-import {
-  SignedIn,
-  SignedOut,
-  SignInButton,
-  UserButton,
-} from "@clerk/clerk-react";
 import UnAuthenticatedLayout from "./layout/(unauthenticated)/UnAuthenticatedLayout";
 import AuthenticatedLayout from "./layout/(authenticated)/AuthenticatedLayout";
 
 // Router
-
 const router = createBrowserRouter([
   {
     path: "/",
@@ -30,7 +22,7 @@ const router = createBrowserRouter([
     errorElement: <ErrorPage />,
   },
   {
-    path: "/-/notfound",
+    path: "*",
     element: <ErrorPage />,
   },
 ]);
