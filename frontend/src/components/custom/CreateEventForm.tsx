@@ -43,23 +43,18 @@ enum EventType {
 }
 
 // Form validation schema
-const formSchema = z
-  .object({
-    eventName: z.string().min(1, {
-      message: "Event name required",
-    }),
-    startTime: z.string().time({ message: "Start time required" }),
-    endTime: z.string().time({ message: "End time required" }),
-    eventDateType: z.number(),
-    eventDates: z.union([
-      z.string().array().nonempty("At least one day required"),
-      z.date().array().nonempty("At least one date required"),
-    ]),
-  })
-  .refine((data) => data.startTime <= data.endTime, {
-    message: "Start time must be earlier than End time",
-    path: ["startTime"], // path of error
-  });
+const formSchema = z.object({
+  eventName: z.string().min(1, {
+    message: "Event name required",
+  }),
+  startTime: z.string().time({ message: "Start time required" }),
+  endTime: z.string().time({ message: "End time required" }),
+  eventDateType: z.number(),
+  eventDates: z.union([
+    z.string().array().nonempty(),
+    z.date().array().nonempty(),
+  ]),
+});
 
 const CreateEventForm = ({ className }: CreateEventFormProp) => {
   const [eventType, setEventType] = useState<EventType>(
@@ -75,7 +70,7 @@ const CreateEventForm = ({ className }: CreateEventFormProp) => {
       eventName: "",
       startTime: "09:00:00",
       endTime: "17:00:00",
-      eventDateType: eventType == EventType.SPECIFIC_DATES ? 1 : 2,
+      eventDateType: 1,
       eventDates: [],
     },
   });
@@ -229,35 +224,39 @@ const CreateEventForm = ({ className }: CreateEventFormProp) => {
         <FormField
           control={form.control}
           name="eventDateType"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>What dates are you available?</FormLabel>
-              <Select
-                onValueChange={(newVal: string) => {
-                  if (Number(newVal) == 1)
-                    setEventType(EventType.SPECIFIC_DATES);
-                  else setEventType(EventType.DAYS_OF_THE_WEEK);
-                  field.onChange(Number(newVal));
-                }}
-              >
-                <FormControl>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Specific dates" />
-                  </SelectTrigger>
-                </FormControl>
-                <SelectContent>
-                  <SelectItem value={EventType.SPECIFIC_DATES.toString()}>
-                    Specific dates
-                  </SelectItem>
-                  <SelectItem value={EventType.DAYS_OF_THE_WEEK.toString()}>
-                    Days of the week
-                  </SelectItem>
-                </SelectContent>
-              </Select>
+          render={({ field }) => {
+            console.log(`field:: ${JSON.stringify(field)}`);
+            return (
+              <FormItem>
+                <FormLabel>What dates are you available?</FormLabel>
+                <Select
+                  onValueChange={(newVal: string) => {
+                    console.log(`newVal:: ${newVal}`);
+                    if (Number(newVal) == 1)
+                      setEventType(EventType.SPECIFIC_DATES);
+                    else setEventType(EventType.DAYS_OF_THE_WEEK);
+                    field.onChange(Number(newVal));
+                  }}
+                >
+                  <FormControl>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Specific dates" />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    <SelectItem value={EventType.SPECIFIC_DATES.toString()}>
+                      Specific dates
+                    </SelectItem>
+                    <SelectItem value={EventType.DAYS_OF_THE_WEEK.toString()}>
+                      Days of the week
+                    </SelectItem>
+                  </SelectContent>
+                </Select>
 
-              <FormMessage />
-            </FormItem>
-          )}
+                <FormMessage />
+              </FormItem>
+            );
+          }}
         />
         {eventType == EventType.SPECIFIC_DATES ? (
           <FormField
@@ -269,7 +268,7 @@ const CreateEventForm = ({ className }: CreateEventFormProp) => {
                   mode="multiple"
                   selected={field.value as Date[]}
                   onSelect={(val) => field.onChange(val)}
-                  initialFocus
+                  max={5}
                 />
               </FormItem>
             )}
@@ -283,7 +282,7 @@ const CreateEventForm = ({ className }: CreateEventFormProp) => {
                 <ToggleGroup
                   type="multiple"
                   size="sm"
-                  variant={"outline"}
+                  variant={"default"}
                   onSelect={field.onChange}
                   onValueChange={(val) => {
                     field.onChange(val);

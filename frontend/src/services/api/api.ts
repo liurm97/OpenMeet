@@ -47,7 +47,6 @@ f 404 NOT FOUND:
 },
 
 */
-// import { LoaderFunctionArgs } from "react-router-dom";
 
 export const getSingleEvent = async (
   eventId: string
