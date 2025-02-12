@@ -6,47 +6,48 @@
 create event
 return status code
 */
-export const BASE_REMOTE_URL = "http://127.0.0.1:8000/api/events";
+import {
+  CreateEventRequestPayloadType,
+  CreateEventResponseDataType,
+} from "@/types/type";
+
+// API token
+export const PRIVATE_API_TOKEN = "1bc84a76-57f0-4678-82a0-9092c2edf8c5";
+
+export const BASE_REMOTE_URL = "http://127.0.0.1:8000/api/v1";
 
 export const createEvent = async (
-  payload: any
+  payload: CreateEventRequestPayloadType
 ): Promise<{
   status: number;
-  data: singleEventResponseDataType;
-}> => {
-  const result = await fetch(BASE_REMOTE_URL, {
-    method: "POST",
-    headers: {
-      Accept: "application/json",
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(payload),
-  });
-  const resp = await result.json();
-  return resp;
-};
+  data: CreateEventResponseDataType;
+}> =>
+  /*
+    1. OnSubmit triggers create event action when user clicks on Create event CTA button
+    2. Calls POST /api/v1/events endpoint
+      - Validates request payload
+      - Inserts record into Events db
+      - Returns response
+      */
+  {
+    const result = await fetch(`${BASE_REMOTE_URL}/events`, {
+      method: "POST",
+      headers: {
+        Accept: "application/json",
+        "Content-Type": "application/json",
+        Authorization: PRIVATE_API_TOKEN,
+      },
+      body: JSON.stringify(payload),
+    });
 
-import { singleEventResponseDataType } from "@/types/type";
-/*
-get single event
-if 200 OK:
- return {"data": {response_data}}
-
-if 400 BAD REQUEST:
- return
- {
-    "error": "Invalid data",
-    "error description": f"You have provided invalid data. Please try again.",
- },
-i
-f 404 NOT FOUND:
- return
-{
-    "error": "Not found",
-    "error description": f"The event_id `{event_id}` you entered does not exist.",
-},
-
-*/
+    const resp = await result.json();
+    const status = result.status;
+    console.log(`createEvent:: status:: ${status} | resp:: ${resp}`);
+    return {
+      status: status,
+      data: resp,
+    };
+  };
 
 export const getSingleEvent = async (
   eventId: string
@@ -55,7 +56,7 @@ export const getSingleEvent = async (
   data: singleEventResponseDataType;
 }> => {
   //   const { eventId } = params;
-  const result = await fetch(`${BASE_REMOTE_URL}/${eventId as string}`, {
+  const result = await fetch(`${BASE_REMOTE_URL}/events/${eventId as string}`, {
     method: "GET",
     headers: {
       Accept: "application/json",

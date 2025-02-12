@@ -13,28 +13,26 @@ const datetimeFormat = `${dateFormat} ${timeFormat}`;
 export const formatCalendarDate = (
   inputDate: Date,
   inputStartTime: string
-): string => {
-  /*
-        input format = YYYY-MM-DDTHH:mm:ss.SSSZ (local timezonea);
-        ouput format = HH:mm:ss
-    */
+): string =>
+  /* Converts date from local timezone to UTC */
+  {
+    const inputDateStartTimeUTC = dayjs(
+      `${dayjs(new Date(inputDate).toISOString()).format(
+        dateFormat
+      )} ${inputStartTime}`
+    ).format(datetimeFormat);
 
-  const inputDateStartTimeUTC = dayjs(
-    `${dayjs(new Date(inputDate).toISOString()).format(
-      dateFormat
-    )} ${inputStartTime}`
-  ).format(datetimeFormat);
+    const outputDateUTC = dayjs(inputDateStartTimeUTC).utc().format(dateFormat);
 
-  const outputDateUTC = dayjs(inputDateStartTimeUTC).utc().format(dateFormat);
+    return outputDateUTC;
+  };
 
-  return outputDateUTC;
-};
-// Mon Dec 02 2024 00:00:00 GMT+0800 (Singapore Standard Time)
-
-export const formatCalendarTime = (inputTime: string): string => {
-  return dayjs(
-    `${dayjs(new Date().toISOString()).format(dateFormat)} ${inputTime}`
-  )
-    .utc()
-    .format(timeFormat);
-};
+export const formatCalendarTime = (inputTime: string): string =>
+  /* Converts time from local timezone to UTC */
+  {
+    return dayjs(
+      `${dayjs(new Date().toISOString()).format(dateFormat)} ${inputTime}`
+    )
+      .utc()
+      .format(timeFormat);
+  };

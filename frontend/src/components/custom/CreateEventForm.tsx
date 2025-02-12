@@ -32,6 +32,8 @@ import { Loader2 } from "lucide-react";
 import { formatCalendarDate, formatCalendarTime } from "@/utils/formatter";
 import { createEvent } from "@/services/api/api";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "@clerk/clerk-react";
+import { EventDate, EventDay } from "@/types/type";
 
 type CreateEventFormProp = {
   className: string;
@@ -57,6 +59,7 @@ const formSchema = z.object({
 });
 
 const CreateEventForm = ({ className }: CreateEventFormProp) => {
+  const auth = useAuth();
   const [eventType, setEventType] = useState<EventType>(
     EventType.SPECIFIC_DATES
   );
@@ -84,56 +87,92 @@ const CreateEventForm = ({ className }: CreateEventFormProp) => {
 
     // format event payload
     let createEventPayload;
-    let formattedDates;
+    let formattedDates: EventDate[] | undefined;
+    let formattedDays: EventDay[] | undefined;
+    let owner: string | undefined;
     try {
       console.log(values);
+
+      /* 1. destructure form field values */
       const { eventName, startTime, endTime, eventDateType, eventDates } =
         values;
 
+      /* 2. format form field values */
+
+      // id value
+      const random_event_id = crypto.randomUUID();
+      console.log(`random_event_id:: ${random_event_id}`);
+
+      // convert startTime and endTime to UTC
       const startTimeUTC = formatCalendarTime(startTime);
       const endTimeUTC = formatCalendarTime(endTime);
 
-      if (eventDateType == 1) {
-        const dates = eventDates;
+      console.log(startTimeUTC);
+      console.log(endTimeUTC);
 
+      // owner value
+      if (auth.isSignedIn === false) {
+        owner = "-1";
+      } else {
+        owner = auth.userId!;
+      }
+      console.log(`owner:: ${owner}`);
+
+      // If SPECIFIC_dates: EventDates value
+      const dates = eventDates;
+      if (eventDateType == 1) {
         formattedDates = dates.map((_date) => {
           const formattedDate = formatCalendarDate(_date as Date, startTime);
+          console.log(formattedDate);
           return {
             date: formattedDate,
           };
         });
-      } else if (eventDateType == 2) {
-        const dates = eventDates;
 
-        formattedDates = dates.map((_date) => {
+        createEventPayload = {
+          id: random_event_id,
+          name: eventName,
+          owner: owner,
+          type: eventDateType,
+          start_time_utc: startTimeUTC,
+          end_time_utc: endTimeUTC,
+          eventDates: formattedDates,
+        };
+      }
+      // If DAY_OF_WEEK: EventDays value
+      else if (eventDateType == 2) {
+        formattedDays = dates.map((_date) => {
           return {
-            dayOfWeek: _date,
+            day: _date,
           };
         });
-      }
-      createEventPayload = {
-        name: eventName,
-        type: eventDateType,
-        startTime: startTimeUTC,
-        endTime: endTimeUTC,
-        eventDates: formattedDates,
-      };
 
-      const createEventResponse = await createEvent(createEventPayload);
-      const { status, data } = createEventResponse;
-      console.log(
-        `createEventResponse:: ${JSON.stringify(createEventResponse)}`
-      );
-      if (status == 200) {
-        const { id }: { id: string } = data;
-        setIsLoading(false);
-        navigate(`/events/${id}`);
-      } else if (status == 404) {
-        setIsLoading(false);
-        navigate("/");
+        createEventPayload = {
+          id: random_event_id,
+          name: eventName,
+          owner: owner,
+          type: eventDateType,
+          start_time_utc: startTimeUTC,
+          end_time_utc: endTimeUTC,
+          eventDays: formattedDays,
+        };
       }
 
       console.log(`createEventPayload:: ${JSON.stringify(createEventPayload)}`);
+      const createEventResponse = await createEvent(createEventPayload!);
+      const { status, data } = createEventResponse;
+      console.log(`status:: ${status}`);
+      console.log(
+        `createEventResponse:: ${JSON.stringify(createEventResponse)}`
+      );
+      if (status == 201) {
+        const { id }: { id: string } = data;
+        setIsLoading(false);
+        navigate(`/event/${id}`);
+      } else if (status == 500 || status == 400) {
+        setIsLoading(false);
+        navigate("/");
+      }
     } catch (error) {
       console.error("Form submission error", error);
       toast.error("Failed to submit the form. Please try again.");
