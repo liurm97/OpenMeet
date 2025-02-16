@@ -1,18 +1,12 @@
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
-import UnAuthenticatedHomePage from "./pages/(unauthenticated)/UnAuthenticatedHomePage";
 import ErrorPage from "./pages/(shared)/ErrorPage";
 import AvailabilityPage from "./pages/(shared)/AvailabilityPage";
-import {
-  SignedIn,
-  SignedOut,
-  SignInButton,
-  UserButton,
-} from "@clerk/clerk-react";
 import UnAuthenticatedLayout from "./layout/(unauthenticated)/UnAuthenticatedLayout";
 import AuthenticatedLayout from "./layout/(authenticated)/AuthenticatedLayout";
+import { fetchSingleEventData } from "./utils/routerAction";
+// import AvailabilityTable from "./components/(shared)/AvailabilityTable";
 
 // Router
-
 const router = createBrowserRouter([
   {
     path: "/",
@@ -25,12 +19,19 @@ const router = createBrowserRouter([
     errorElement: <ErrorPage />,
   },
   {
-    path: "/event/:eventid",
+    path: "/event/:eventId",
     element: <AvailabilityPage />,
     errorElement: <ErrorPage />,
+    loader: async ({ params }) => fetchSingleEventData(params.eventId!),
   },
+  // {
+  //   path: "/table",
+  //   element: <AvailabilityTable />,
+  //   errorElement: <ErrorPage />,
+  // },
+
   {
-    path: "/-/notfound",
+    path: "*",
     element: <ErrorPage />,
   },
 ]);

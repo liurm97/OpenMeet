@@ -1,6 +1,10 @@
-const HowItWorks = () => {
+const HowItWorks = ({
+  howItWorksRef,
+}: {
+  howItWorksRef: React.MutableRefObject<HTMLDivElement | null>;
+}) => {
   return (
-    <section id="how-it-works" className="py-20">
+    <section id="how-it-works" className="py-20" ref={howItWorksRef}>
       {/* How it works */}
       <div className="container mx-auto px-4">
         <h2 className="text-3xl font-bold text-center mb-12">How it works</h2>

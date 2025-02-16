@@ -3,8 +3,6 @@ import CreateEventForm from "@/components/custom/CreateEventForm";
 const UnAuthenticatedMainBody = () => {
   return (
     <div className="flex flex-col">
-      {/* Header */}
-
       {/* Hero Section */}
       <section className="py-20 bg-gray-100">
         <div className="container mx-auto px-4 flex flex-row ">

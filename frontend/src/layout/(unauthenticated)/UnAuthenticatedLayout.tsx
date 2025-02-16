@@ -1,15 +1,10 @@
 import UnAuthenticatedHomePage from "@/pages/(unauthenticated)/UnAuthenticatedHomePage";
-import {
-  SignedIn,
-  SignedOut,
-  SignInButton,
-  UserButton,
-} from "@clerk/clerk-react";
-import { useAuth, useUser } from "@clerk/react-router";
+import { SignedOut } from "@clerk/clerk-react";
+import { useAuth } from "@clerk/react-router";
 
 const UnAuthenticatedLayout = () => {
   const user = useAuth();
-  const { isLoaded, isSignedIn, userId } = user;
+  const { isLoaded, userId } = user;
   if (isLoaded) console.log(`userId:: ${userId}`);
 
   return (

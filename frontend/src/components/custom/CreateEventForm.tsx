@@ -29,9 +29,14 @@ import { Calendar } from "@/components/ui/calendar";
 import { TIME_PICKER_OPTIONS } from "@/utils/globals";
 import { useState } from "react";
 import { Loader2 } from "lucide-react";
-import { formatCalendarDate, formatCalendarTime } from "@/utils/formatter";
+import {
+  formatCalendarDateUTC,
+  formatCalendarTimeUTC,
+} from "@/utils/formatter";
 import { createEvent } from "@/services/api/api";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "@clerk/clerk-react";
+import { EventDate, EventDay } from "@/types/type";
 
 type CreateEventFormProp = {
   className: string;
@@ -43,25 +48,21 @@ enum EventType {
 }
 
 // Form validation schema
-const formSchema = z
-  .object({
-    eventName: z.string().min(1, {
-      message: "Event name required",
-    }),
-    startTime: z.string().time({ message: "Start time required" }),
-    endTime: z.string().time({ message: "End time required" }),
-    eventDateType: z.number(),
-    eventDates: z.union([
-      z.string().array().nonempty("At least one day required"),
-      z.date().array().nonempty("At least one date required"),
-    ]),
-  })
-  .refine((data) => data.startTime <= data.endTime, {
-    message: "Start time must be earlier than End time",
-    path: ["startTime"], // path of error
-  });
+const formSchema = z.object({
+  eventName: z.string().min(1, {
+    message: "Event name required",
+  }),
+  startTime: z.string().time({ message: "Start time required" }),
+  endTime: z.string().time({ message: "End time required" }),
+  eventDateType: z.number(),
+  eventDates: z.union([
+    z.string().array().nonempty(),
+    z.date().array().nonempty(),
+  ]),
+});
 
 const CreateEventForm = ({ className }: CreateEventFormProp) => {
+  const auth = useAuth();
   const [eventType, setEventType] = useState<EventType>(
     EventType.SPECIFIC_DATES
   );
@@ -75,7 +76,7 @@ const CreateEventForm = ({ className }: CreateEventFormProp) => {
       eventName: "",
       startTime: "09:00:00",
       endTime: "17:00:00",
-      eventDateType: eventType == EventType.SPECIFIC_DATES ? 1 : 2,
+      eventDateType: 1,
       eventDates: [],
     },
   });
@@ -89,56 +90,93 @@ const CreateEventForm = ({ className }: CreateEventFormProp) => {
 
     // format event payload
     let createEventPayload;
-    let formattedDates;
+    let formattedDates: EventDate[] | undefined;
+    let formattedDays: EventDay[] | undefined;
+    let owner: string | undefined;
     try {
       console.log(values);
+
+      /* 1. destructure form field values */
       const { eventName, startTime, endTime, eventDateType, eventDates } =
         values;
 
-      const startTimeUTC = formatCalendarTime(startTime);
-      const endTimeUTC = formatCalendarTime(endTime);
+      /* 2. format form field values */
 
+      // id value
+      const random_event_id = crypto.randomUUID();
+      console.log(`random_event_id:: ${random_event_id}`);
+
+      // convert startTime and endTime to UTC
+      const startTimeUTC = formatCalendarTimeUTC(startTime);
+      const endTimeUTC = formatCalendarTimeUTC(endTime);
+
+      console.log(startTimeUTC);
+      console.log(endTimeUTC);
+
+      // owner value
+      if (auth.isSignedIn === false) {
+        owner = "-1";
+      } else {
+        owner = auth.userId!;
+      }
+      console.log(`owner:: ${owner}`);
+
+      // If SPECIFIC_dates: EventDates value
+      const dates = eventDates;
       if (eventDateType == 1) {
-        const dates = eventDates;
-
         formattedDates = dates.map((_date) => {
-          const formattedDate = formatCalendarDate(_date as Date, startTime);
+          const formattedDate = formatCalendarDateUTC(_date as Date, startTime);
+          console.log(formattedDate);
           return {
             date: formattedDate,
           };
         });
-      } else if (eventDateType == 2) {
-        const dates = eventDates;
 
-        formattedDates = dates.map((_date) => {
+        createEventPayload = {
+          id: random_event_id,
+          name: eventName,
+          owner: owner,
+          type: eventDateType,
+          start_time_utc: startTimeUTC,
+          end_time_utc: endTimeUTC,
+          eventDates: formattedDates,
+        };
+      }
+      // If DAY_OF_WEEK: EventDays value
+      else if (eventDateType == 2) {
+        formattedDays = dates.map((_date) => {
           return {
-            dayOfWeek: _date,
+            day: _date,
           };
         });
-      }
-      createEventPayload = {
-        name: eventName,
-        type: eventDateType,
-        startTime: startTimeUTC,
-        endTime: endTimeUTC,
-        eventDates: formattedDates,
-      };
 
-      const createEventResponse = await createEvent(createEventPayload);
-      const { status, data } = createEventResponse;
-      console.log(
-        `createEventResponse:: ${JSON.stringify(createEventResponse)}`
-      );
-      if (status == 200) {
-        const { id }: { id: string } = data;
-        setIsLoading(false);
-        navigate(`/events/${id}`);
-      } else if (status == 404) {
-        setIsLoading(false);
-        navigate("/");
+        createEventPayload = {
+          id: random_event_id,
+          name: eventName,
+          owner: owner,
+          type: eventDateType,
+          start_time_utc: startTimeUTC,
+          end_time_utc: endTimeUTC,
+          eventDays: formattedDays,
+        };
       }
 
       console.log(`createEventPayload:: ${JSON.stringify(createEventPayload)}`);
+      const createEventResponse = await createEvent(createEventPayload!);
+      const { status, data } = createEventResponse;
+      console.log(`status:: ${status}`);
+      console.log(
+        `createEventResponse:: ${JSON.stringify(createEventResponse)}`
+      );
+      if (status == 201) {
+        const { id }: { id: string } = data;
+        console.log(`id:: ${id}`);
+        setIsLoading(false);
+        navigate(`/event/${id}`);
+      } else if (status == 500 || status == 400) {
+        setIsLoading(false);
+        navigate("/");
+      }
     } catch (error) {
       console.error("Form submission error", error);
       toast.error("Failed to submit the form. Please try again.");
@@ -229,35 +267,39 @@ const CreateEventForm = ({ className }: CreateEventFormProp) => {
         <FormField
           control={form.control}
           name="eventDateType"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>What dates are you available?</FormLabel>
-              <Select
-                onValueChange={(newVal: string) => {
-                  if (Number(newVal) == 1)
-                    setEventType(EventType.SPECIFIC_DATES);
-                  else setEventType(EventType.DAYS_OF_THE_WEEK);
-                  field.onChange(Number(newVal));
-                }}
-              >
-                <FormControl>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Specific dates" />
-                  </SelectTrigger>
-                </FormControl>
-                <SelectContent>
-                  <SelectItem value={EventType.SPECIFIC_DATES.toString()}>
-                    Specific dates
-                  </SelectItem>
-                  <SelectItem value={EventType.DAYS_OF_THE_WEEK.toString()}>
-                    Days of the week
-                  </SelectItem>
-                </SelectContent>
-              </Select>
+          render={({ field }) => {
+            console.log(`field:: ${JSON.stringify(field)}`);
+            return (
+              <FormItem>
+                <FormLabel>What dates are you available?</FormLabel>
+                <Select
+                  onValueChange={(newVal: string) => {
+                    console.log(`newVal:: ${newVal}`);
+                    if (Number(newVal) == 1)
+                      setEventType(EventType.SPECIFIC_DATES);
+                    else setEventType(EventType.DAYS_OF_THE_WEEK);
+                    field.onChange(Number(newVal));
+                  }}
+                >
+                  <FormControl>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Specific dates" />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    <SelectItem value={EventType.SPECIFIC_DATES.toString()}>
+                      Specific dates
+                    </SelectItem>
+                    <SelectItem value={EventType.DAYS_OF_THE_WEEK.toString()}>
+                      Days of the week
+                    </SelectItem>
+                  </SelectContent>
+                </Select>
 
-              <FormMessage />
-            </FormItem>
-          )}
+                <FormMessage />
+              </FormItem>
+            );
+          }}
         />
         {eventType == EventType.SPECIFIC_DATES ? (
           <FormField
@@ -269,7 +311,7 @@ const CreateEventForm = ({ className }: CreateEventFormProp) => {
                   mode="multiple"
                   selected={field.value as Date[]}
                   onSelect={(val) => field.onChange(val)}
-                  initialFocus
+                  max={5}
                 />
               </FormItem>
             )}
@@ -283,7 +325,7 @@ const CreateEventForm = ({ className }: CreateEventFormProp) => {
                 <ToggleGroup
                   type="multiple"
                   size="sm"
-                  variant={"outline"}
+                  variant={"default"}
                   onSelect={field.onChange}
                   onValueChange={(val) => {
                     field.onChange(val);

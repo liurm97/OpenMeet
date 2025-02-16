@@ -1,16 +1,39 @@
 import { Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Copy } from "lucide-react";
-import { singleEventResponseDataType } from "@/types/type";
+import { GetSingleEventResponseDataTypeLocal } from "@/types/type";
+import AvailabilityTable from "@/components/(shared)/AvailabilityTable";
+import { useTableDragSelect } from "use-table-drag-select";
+import { useState } from "react";
+import { buildDefaultDateTimeObject } from "@/utils/availabilityAction";
 
 const UnAuthenticatedAvailabilityBody = ({
   eventData,
 }: {
-  eventData: singleEventResponseDataType;
+  eventData: GetSingleEventResponseDataTypeLocal | null;
 }) => {
-  // const loaderData = useLoaderData();
-  // const eventData: singleEventResponseDataType = loaderData.data;
-  // console.log(`data:: ${JSON.stringify(data)}`);
+  const type = eventData?.type as number;
+  // const defaultDateTimeObject = buildDefaultDateTimeObject(type, eventData);
+  // const defaultDateTimeShape = defaultDateTimeObject.shape;
+
+  // console.log(`defaultDateTimeShape:: ${JSON.stringify(defaultDateTimeShape)}`);
+  // const availabilityObj = {
+  //   shape: [],
+  //   availability: [],
+  // };
+  /*
+  const obj = {
+    tableShape: [[false, false],[false, false]],
+    times: [[0, 0],[0, 0]],
+  }
+  */
+  const [sharedAvailabilityState, setSharedAvailabilityState] = useState(() =>
+    buildDefaultDateTimeObject(type, eventData!)
+  );
+  console.log(
+    `sharedAvailabilityState:: ${JSON.stringify(sharedAvailabilityState)}`
+  );
+  const [ref, value] = useTableDragSelect(sharedAvailabilityState.shape);
 
   return (
     <main className="container mx-auto px-4 py-8">
@@ -20,7 +43,7 @@ const UnAuthenticatedAvailabilityBody = ({
           <div>
             <h1 className="text-2xl font-bold mb-1">{eventData?.name}</h1>
             <div className="flex items-center space-x-4">
-              <span className="text-gray-600">12/1 - 12/7</span>
+              <span className="text-gray-600">Dates placeholder</span>
               <Button variant="outline" size="sm">
                 Edit event
               </Button>
@@ -42,31 +65,10 @@ const UnAuthenticatedAvailabilityBody = ({
         </div>
 
         {/* Two-column layout */}
-        <div className="flex flex-col lg:flex-row gap-8">
+        <div className="flex flex-col lg:flex-row gap-2">
           {/* Calendar Grid */}
           <div className="lg:w-2/3">
-            <div className="grid grid-cols-3 gap-px bg-gray-200">
-              <div className="bg-white p-4 text-center font-medium">Dec 1</div>
-              <div className="bg-white p-4 text-center font-medium">Dec 2</div>
-              <div className="bg-white p-4 text-center font-medium">Dec 3</div>
-
-              {[...Array(6)].map((_, rowIndex) => (
-                <>
-                  <div
-                    key={`row-${rowIndex}-col-1`}
-                    className="bg-white p-4 border border-gray-100 h-16 cursor-pointer hover:bg-gray-50"
-                  />
-                  <div
-                    key={`row-${rowIndex}-col-2`}
-                    className="bg-white p-4 border border-gray-100 h-16 cursor-pointer hover:bg-gray-50"
-                  />
-                  <div
-                    key={`row-${rowIndex}-col-3`}
-                    className="bg-white p-4 border border-gray-100 h-16 cursor-pointer hover:bg-gray-50"
-                  />
-                </>
-              ))}
-            </div>
+            <AvailabilityTable ref={ref} value={value} />
           </div>
 
           {/* Responses */}
