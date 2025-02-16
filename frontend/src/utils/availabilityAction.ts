@@ -175,7 +175,6 @@ export const buildDefaultDateTimeObject = (
         ]
 */
   {
-    console.log(`buildDefaultDateTimeObject called`);
     let eventDates: EventDate[] | undefined, eventDays: EventDay[] | undefined;
 
     const dateTimeArray: string[][] = [];

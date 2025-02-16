@@ -1,45 +1,67 @@
+import { EventDate, EventDay } from "@/types/type";
 import { forwardRef } from "react";
 
 interface Props {
   value: boolean[][];
+  eventDates?: EventDate[] | undefined;
+  eventDays?: EventDay[] | undefined;
+  timeArray: string[];
 }
 
 const AvailabilityTable = forwardRef<HTMLTableElement, Props>(
-  ({ value }, ref) => {
+  ({ value, eventDates, eventDays, timeArray }, ref) => {
     return (
-      //   <div className="flex w-full">
-      <table ref={ref} className="flex flex-col">
-        <thead className="flex-grow">
-          <tr className="flex">
-            <th className="size-14 grow">Mon</th>
-            <th className="size-14 grow">Tue</th>
-            <th className="size-14 grow">Wed</th>
-          </tr>
-        </thead>
-        <tbody className="flex">
-          {value.map((row, rowIndex) => (
-            <tr
-              key={rowIndex}
-              className={`flex flex-col grow`}
-              onClick={() => {
-                console.log("clicked");
-              }}
-            >
-              <th>{rowIndex + 1}</th>
-              {row.map((_, columnIndex) => (
-                <td
-                  key={columnIndex}
-                  className={`border-x border-y border-gray-200 border-dashed size-6 w-full
+      <>
+        <div className="flex flex-col justify-self-end">
+          <div className="size-14" />
+          {timeArray.map((time, _ind) => (
+            <>
+              <div className="size-6" key={`startTime${_ind}`}>
+                {time}
+              </div>
+              <div className="size-6"></div>
+            </>
+          ))}
+        </div>
+        <table ref={ref} className="flex flex-col col-span-7">
+          <thead className="flex-grow">
+            <tr className="flex">
+              {eventDays == undefined
+                ? eventDates!.map((_date, _ind) => (
+                    <th key={`eventDate${_ind}`} className="size-14 grow">
+                      {_date.date as string}
+                    </th>
+                  ))
+                : eventDays!.map((_day, _ind) => (
+                    <th key={`eventDay${_ind}`} className="size-14 grow">
+                      {_day.day as string}
+                    </th>
+                  ))}
+            </tr>
+          </thead>
+          <tbody className="flex">
+            {value.map((row, rowIndex) => (
+              <tr
+                key={rowIndex}
+                className={`flex flex-col grow`}
+                onClick={() => {
+                  console.log("clicked");
+                }}
+              >
+                {row.map((_, columnIndex) => (
+                  <td
+                    key={columnIndex}
+                    className={`border-x border-y border-gray-200 border-dashed size-6 w-full
                     ${
                       value[rowIndex][columnIndex] ? "bg-sky-500" : "bg-white"
                     }`}
-                />
-              ))}
-            </tr>
-          ))}
-        </tbody>
-      </table>
-      //   </div>
+                  />
+                ))}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </>
     );
   }
 );

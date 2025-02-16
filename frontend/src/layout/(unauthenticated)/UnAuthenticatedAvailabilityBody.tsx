@@ -1,11 +1,17 @@
 import { Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Copy } from "lucide-react";
-import { GetSingleEventResponseDataTypeLocal } from "@/types/type";
+import {
+  EventDate,
+  EventDay,
+  GetSingleEventResponseDataTypeLocal,
+} from "@/types/type";
 import AvailabilityTable from "@/components/(shared)/AvailabilityTable";
 import { useTableDragSelect } from "use-table-drag-select";
 import { useState } from "react";
 import { buildDefaultDateTimeObject } from "@/utils/availabilityAction";
+import { split } from "postcss/lib/list";
+import { start } from "repl";
 
 const UnAuthenticatedAvailabilityBody = ({
   eventData,
@@ -30,6 +36,18 @@ const UnAuthenticatedAvailabilityBody = ({
   const [sharedAvailabilityState, setSharedAvailabilityState] = useState(() =>
     buildDefaultDateTimeObject(type, eventData!)
   );
+
+  /* Build time array and to pass to Availability component */
+  const timeArray: string[] = [];
+  sharedAvailabilityState.availability[0].forEach((_datetime, _ind) => {
+    const splitted = _datetime.split(" ");
+    const time = splitted[splitted.length - 1];
+
+    if (_ind % 2 == 0) {
+      timeArray.push(time);
+    }
+  });
+
   console.log(
     `sharedAvailabilityState:: ${JSON.stringify(sharedAvailabilityState)}`
   );
@@ -67,14 +85,30 @@ const UnAuthenticatedAvailabilityBody = ({
         {/* Two-column layout */}
         <div className="flex flex-col lg:flex-row gap-2">
           {/* Calendar Grid */}
-          <div className="lg:w-2/3">
-            <AvailabilityTable ref={ref} value={value} />
+          <div className="lg:w-2/3 grid grid-col-8 grid-flow-col-dense">
+            {eventData?.type == 1 ? (
+              <AvailabilityTable
+                ref={ref}
+                value={value}
+                eventDates={eventData?.event_dates as EventDate[]}
+                timeArray={timeArray}
+              />
+            ) : (
+              <AvailabilityTable
+                ref={ref}
+                value={value}
+                eventDays={eventData?.event_days as EventDay[]}
+                timeArray={timeArray}
+              />
+            )}
           </div>
 
           {/* Responses */}
           <div className="lg:w-1/3">
             <div className="p-6 border border-gray-200 rounded-lg">
-              <h2 className="font-medium text-xl mb-4">Responses (0)</h2>
+              <h2 className="font-medium text-xl mb-4">
+                Responses ({eventData?.event_availabilities!.length})
+              </h2>
               <p className="text-gray-600">
                 No responses yet. Share the event link to get responses.
               </p>
