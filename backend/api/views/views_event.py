@@ -178,6 +178,7 @@ class GetSpecificEventView(APIView):
             try:
                 # check to see if event_id exists
                 result = Event.objects.get(pk=str(event_id))
+                event_name = result.name
                 type = result.type
                 owner = result.owner
                 start_time_utc = result.start_time_utc
@@ -224,6 +225,7 @@ class GetSpecificEventView(APIView):
 
                     response_data = {
                         "id": event_id,
+                        "name": event_name,
                         "owner": owner,
                         "type": type,
                         "start_time_utc": start_time_utc,
@@ -245,6 +247,7 @@ class GetSpecificEventView(APIView):
 
                     response_data = {
                         "id": event_id,
+                        "name": event_name,
                         "owner": owner,
                         "type": type,
                         "start_time_utc": start_time_utc,
