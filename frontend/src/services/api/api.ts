@@ -9,6 +9,7 @@ return status code
 import {
   CreateEventRequestPayloadType,
   CreateEventResponseDataType,
+  GetSingleEventResponseDataTypeUTC,
 } from "@/types/type";
 
 // API token
@@ -53,16 +54,21 @@ export const getSingleEvent = async (
   eventId: string
 ): Promise<{
   status: number;
-  data: singleEventResponseDataType;
+  data: GetSingleEventResponseDataTypeUTC;
 }> => {
-  //   const { eventId } = params;
   const result = await fetch(`${BASE_REMOTE_URL}/events/${eventId as string}`, {
     method: "GET",
     headers: {
       Accept: "application/json",
       "Content-Type": "application/json",
+      Authorization: PRIVATE_API_TOKEN,
     },
   });
+
+  const status = result.status;
   const resp = await result.json();
-  return resp;
+  return {
+    status: status,
+    data: resp,
+  };
 };

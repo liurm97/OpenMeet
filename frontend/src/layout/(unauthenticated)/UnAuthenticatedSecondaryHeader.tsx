@@ -2,6 +2,7 @@ import { Link } from "react-router-dom";
 import CalendarLogo from "../../assets/calendar_icon.svg?react";
 import { Coffee, MessageSquare, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import ClerkSignIn from "@/components/Unauthenticated/MainHeader/ClerkSignIn";
 
 const UnAuthenticatedSecondaryHeader = () => {
   return (
@@ -34,12 +35,7 @@ const UnAuthenticatedSecondaryHeader = () => {
             <Plus className="h-4 w-4 mr-2" />
             New event
           </Button>
-          <Button
-            variant="default"
-            className="bg-black text-white hover:bg-gray-800"
-          >
-            Sign in
-          </Button>
+          <ClerkSignIn />
         </div>
       </div>
     </header>

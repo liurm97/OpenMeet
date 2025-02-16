@@ -1,27 +1,20 @@
 import UnAuthenticatedAvailabilityBody from "@/layout/(unauthenticated)/UnAuthenticatedAvailabilityBody";
 import UnAuthenticatedSecondaryHeader from "@/layout/(unauthenticated)/UnAuthenticatedSecondaryHeader";
-import { getSingleEvent } from "@/services/api/api";
-import { singleEventResponseDataType } from "@/types/type";
-import { useEffect, useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { GetSingleEventResponseDataTypeLocal } from "@/types/type";
+
+import { useState } from "react";
+import { useNavigate, useParams, useLoaderData } from "react-router-dom";
 
 const AvailabilityPage = () => {
-  const params = useParams();
+  const { eventId } = useParams();
   const navigate = useNavigate();
-  const eventId = params.eventId;
-  const [eventData, setEventData] = useState<singleEventResponseDataType>(null);
+  const loadedData: GetSingleEventResponseDataTypeLocal = useLoaderData();
+  console.log(`AvailabilityPage:: eventId:: ${eventId}`);
 
-  useEffect(() => {
-    const fetchData = async () => {
-      const eventResponse = await getSingleEvent(eventId as string);
-      if (eventResponse.status == 200) {
-        setEventData(eventResponse.data);
-      } else {
-        navigate("/-/notfound", { replace: true });
-      }
-    };
-    fetchData();
-  }, [eventId, navigate]);
+  const [eventData, setEventData] =
+    useState<GetSingleEventResponseDataTypeLocal | null>(loadedData);
+
+  console.log(`eventData:: ${JSON.stringify(eventData)}`);
 
   return (
     <div className="min-h-screen flex flex-col">

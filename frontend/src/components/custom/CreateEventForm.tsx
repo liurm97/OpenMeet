@@ -29,7 +29,10 @@ import { Calendar } from "@/components/ui/calendar";
 import { TIME_PICKER_OPTIONS } from "@/utils/globals";
 import { useState } from "react";
 import { Loader2 } from "lucide-react";
-import { formatCalendarDate, formatCalendarTime } from "@/utils/formatter";
+import {
+  formatCalendarDateUTC,
+  formatCalendarTimeUTC,
+} from "@/utils/formatter";
 import { createEvent } from "@/services/api/api";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@clerk/clerk-react";
@@ -104,8 +107,8 @@ const CreateEventForm = ({ className }: CreateEventFormProp) => {
       console.log(`random_event_id:: ${random_event_id}`);
 
       // convert startTime and endTime to UTC
-      const startTimeUTC = formatCalendarTime(startTime);
-      const endTimeUTC = formatCalendarTime(endTime);
+      const startTimeUTC = formatCalendarTimeUTC(startTime);
+      const endTimeUTC = formatCalendarTimeUTC(endTime);
 
       console.log(startTimeUTC);
       console.log(endTimeUTC);
@@ -122,7 +125,7 @@ const CreateEventForm = ({ className }: CreateEventFormProp) => {
       const dates = eventDates;
       if (eventDateType == 1) {
         formattedDates = dates.map((_date) => {
-          const formattedDate = formatCalendarDate(_date as Date, startTime);
+          const formattedDate = formatCalendarDateUTC(_date as Date, startTime);
           console.log(formattedDate);
           return {
             date: formattedDate,
@@ -167,6 +170,7 @@ const CreateEventForm = ({ className }: CreateEventFormProp) => {
       );
       if (status == 201) {
         const { id }: { id: string } = data;
+        console.log(`id:: ${id}`);
         setIsLoading(false);
         navigate(`/event/${id}`);
       } else if (status == 500 || status == 400) {
