@@ -199,7 +199,6 @@ export const buildDefaultDateTimeObject = (
           //time = "09:00:00"
 
           const d = dayjs(`${date}${time}`).format("YYYY-MM-DD HH:mm");
-          console.log(`d:: ${d}`);
           row.push(d);
         });
         dateTimeArray.push(row);

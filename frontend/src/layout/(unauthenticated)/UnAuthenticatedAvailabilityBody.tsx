@@ -6,12 +6,11 @@ import {
   EventDay,
   GetSingleEventResponseDataTypeLocal,
 } from "@/types/type";
-import AvailabilityTable from "@/components/(shared)/AvailabilityTable";
+import WriteAvailabilityTable from "@/components/(shared)/WriteAvailabilityTable";
 import { useTableDragSelect } from "use-table-drag-select";
 import { useState } from "react";
 import { buildDefaultDateTimeObject } from "@/utils/availabilityAction";
-import { split } from "postcss/lib/list";
-import { start } from "repl";
+import ReadOnlyAvailabilityTable from "@/components/(shared)/ReadOnlyAvailabilityTable";
 
 const UnAuthenticatedAvailabilityBody = ({
   eventData,
@@ -33,9 +32,17 @@ const UnAuthenticatedAvailabilityBody = ({
     times: [[0, 0],[0, 0]],
   }
   */
+
+  /*  create object consisting of array and ref to render <WriteAvailabilityTable/> */
   const [sharedAvailabilityState, setSharedAvailabilityState] = useState(() =>
     buildDefaultDateTimeObject(type, eventData!)
   );
+
+  /*  Output boolean[][] array to render <ReadAvailabilityTable/> */
+  const valueReadAvailabilityTable = buildDefaultDateTimeObject(
+    type,
+    eventData!
+  ).shape;
 
   /* Build time array and to pass to Availability component */
   const timeArray: string[] = [];
@@ -86,15 +93,21 @@ const UnAuthenticatedAvailabilityBody = ({
         <div className="flex flex-col lg:flex-row gap-2">
           {/* Calendar Grid */}
           <div className="lg:w-2/3 grid grid-col-8 grid-flow-col-dense">
+            <ReadOnlyAvailabilityTable
+              value={valueReadAvailabilityTable}
+              eventDates={eventData?.event_dates as EventDate[]}
+              eventDays={eventData?.event_days as EventDay[]}
+              timeArray={timeArray}
+            />
             {eventData?.type == 1 ? (
-              <AvailabilityTable
+              <WriteAvailabilityTable
                 ref={ref}
                 value={value}
                 eventDates={eventData?.event_dates as EventDate[]}
                 timeArray={timeArray}
               />
             ) : (
-              <AvailabilityTable
+              <WriteAvailabilityTable
                 ref={ref}
                 value={value}
                 eventDays={eventData?.event_days as EventDay[]}

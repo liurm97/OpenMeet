@@ -8,19 +8,18 @@ interface Props {
   timeArray: string[];
 }
 
-const AvailabilityTable = forwardRef<HTMLTableElement, Props>(
+const WriteAvailabilityTable = forwardRef<HTMLTableElement, Props>(
   ({ value, eventDates, eventDays, timeArray }, ref) => {
+    console.log(value);
     return (
       <>
         <div className="flex flex-col justify-self-end">
           <div className="size-14" />
           {timeArray.map((time, _ind) => (
-            <>
-              <div className="size-6" key={`startTime${_ind}`}>
-                {time}
-              </div>
+            <div key={`time${_ind}`}>
+              <div className="size-6">{time}</div>
               <div className="size-6"></div>
-            </>
+            </div>
           ))}
         </div>
         <table ref={ref} className="flex flex-col col-span-7">
@@ -66,4 +65,4 @@ const AvailabilityTable = forwardRef<HTMLTableElement, Props>(
   }
 );
 
-export default AvailabilityTable;
+export default WriteAvailabilityTable;

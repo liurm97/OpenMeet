@@ -4,7 +4,6 @@ import AvailabilityPage from "./pages/(shared)/AvailabilityPage";
 import UnAuthenticatedLayout from "./layout/(unauthenticated)/UnAuthenticatedLayout";
 import AuthenticatedLayout from "./layout/(authenticated)/AuthenticatedLayout";
 import { fetchSingleEventData } from "./utils/routerAction";
-// import AvailabilityTable from "./components/(shared)/AvailabilityTable";
 
 // Router
 const router = createBrowserRouter([
@@ -24,12 +23,6 @@ const router = createBrowserRouter([
     errorElement: <ErrorPage />,
     loader: async ({ params }) => fetchSingleEventData(params.eventId!),
   },
-  // {
-  //   path: "/table",
-  //   element: <AvailabilityTable />,
-  //   errorElement: <ErrorPage />,
-  // },
-
   {
     path: "*",
     element: <ErrorPage />,
