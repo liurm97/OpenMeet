@@ -38,10 +38,6 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "@clerk/clerk-react";
 import { EventDate, EventDay } from "@/types/type";
 
-type CreateEventFormProp = {
-  className: string;
-};
-
 enum EventType {
   SPECIFIC_DATES = 1,
   DAYS_OF_THE_WEEK = 2,
@@ -61,7 +57,7 @@ const formSchema = z.object({
   ]),
 });
 
-const CreateEventForm = ({ className }: CreateEventFormProp) => {
+const CreateEventForm = () => {
   const auth = useAuth();
   const [eventType, setEventType] = useState<EventType>(
     EventType.SPECIFIC_DATES
@@ -185,7 +181,10 @@ const CreateEventForm = ({ className }: CreateEventFormProp) => {
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className={`${className}`}>
+      <form
+        onSubmit={form.handleSubmit(onSubmit)}
+        className={`py-5 bg-white flex flex-col gap-4`}
+      >
         {/* -------- Event name -------- */}
         <FormField
           control={form.control}

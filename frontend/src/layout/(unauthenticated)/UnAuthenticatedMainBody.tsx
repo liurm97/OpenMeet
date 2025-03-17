@@ -19,7 +19,7 @@ const UnAuthenticatedMainBody = () => {
           </div>
           <div className="max-w-3xl py-10 px-14 mx-auto bg-white">
             <h2 className="text-3xl font-medium">New Event</h2>
-            <CreateEventForm className=" py-5 bg-white flex flex-col gap-4" />
+            <CreateEventForm />
           </div>
         </div>
       </section>

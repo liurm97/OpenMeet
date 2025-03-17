@@ -14,7 +14,6 @@ from ..serializers.serializers_event import (
 from ..serializers.serializers_date import DateSerializer
 
 # django libraries
-from django.http import JsonResponse
 from django.core.exceptions import *
 
 # rest framework libraries

@@ -165,3 +165,7 @@ cython_debug/
 credentials.json
 test.py
 token.json
+client_secret.json
+.vscode/
+.DS_Store
+node_modules/
