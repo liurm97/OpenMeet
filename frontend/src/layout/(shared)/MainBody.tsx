@@ -1,9 +1,9 @@
 import CreateEventForm from "@/components/custom/CreateEventForm";
 
-const UnAuthenticatedMainBody = () => {
+const MainBody = () => {
   return (
     <div className="flex flex-col">
-      {/* Hero Section */}
+      {/* Scheduling section */}
       <section className="py-20 bg-gray-100">
         <div className="container mx-auto px-4 flex flex-row ">
           <div className="max-w-2xl my-20 mx-auto">
@@ -27,4 +27,4 @@ const UnAuthenticatedMainBody = () => {
   );
 };
 
-export default UnAuthenticatedMainBody;
+export default MainBody;

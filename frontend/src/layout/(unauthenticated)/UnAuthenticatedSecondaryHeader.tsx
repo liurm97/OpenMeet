@@ -2,7 +2,7 @@ import { Link } from "react-router-dom";
 import CalendarLogo from "../../assets/calendar_icon.svg?react";
 import { Coffee, MessageSquare, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import ClerkSignIn from "@/components/Unauthenticated/MainHeader/ClerkSignIn";
+import ClerkSignIn from "@/components/(unauthenticated)/Header/ClerkSignIn";
 
 const UnAuthenticatedSecondaryHeader = () => {
   return (

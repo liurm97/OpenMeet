@@ -2,10 +2,6 @@
  Handles or consumes API
  */
 
-/*
-create event
-return status code
-*/
 import {
   CreateEventRequestPayloadType,
   CreateEventResponseDataType,

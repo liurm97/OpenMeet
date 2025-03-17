@@ -1,20 +1,19 @@
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
-import ErrorPage from "./pages/(shared)/ErrorPage";
-import AvailabilityPage from "./pages/(shared)/AvailabilityPage";
-import UnAuthenticatedLayout from "./layout/(unauthenticated)/UnAuthenticatedLayout";
-import AuthenticatedLayout from "./layout/(authenticated)/AuthenticatedLayout";
+import ErrorPage from "./pages/ErrorPage";
+import AvailabilityPage from "./pages/AvailabilityPage";
 import { fetchSingleEventData } from "./utils/routerAction";
+import HomePage from "./pages/HomePage";
 
 // Router
 const router = createBrowserRouter([
   {
     path: "/",
-    element: <UnAuthenticatedLayout />,
+    element: <HomePage />,
     errorElement: <ErrorPage />,
   },
   {
     path: "/home",
-    element: <AuthenticatedLayout />,
+    element: <HomePage />,
     errorElement: <ErrorPage />,
   },
   {

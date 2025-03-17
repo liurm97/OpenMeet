@@ -18,15 +18,14 @@ from django.core.exceptions import *
 
 # rest framework libraries
 from rest_framework.response import Response
-from rest_framework.decorators import api_view
 from rest_framework import status
 from rest_framework.exceptions import *
 from rest_framework.views import APIView
+from rest_framework.permissions import AllowAny
+
 
 # other libraries
 from uuid import uuid4
-
-from ..auth_tokens import UNAUTHENTICATED_USER_AUTH_TOKEN
 
 
 class CreateEventView(APIView):
@@ -34,7 +33,12 @@ class CreateEventView(APIView):
     View to create new event
     """
 
+    permission_classes = [AllowAny]
+
     def post(self, request, format=None):
+        """
+        Handle POST request
+        """
 
         if validate_auth_token(request) == False:
             return Response(
@@ -129,6 +133,8 @@ class CreateEventView(APIView):
 
 
 class GetSpecificEventView(APIView):
+
+    permission_classes = [AllowAny]
     """
     View to get specific event by event id
     """
@@ -160,13 +166,16 @@ class GetSpecificEventView(APIView):
     """
 
     def get(self, request, event_id, format=None):
+        """
+        Handle GET request
+        """
 
         if validate_auth_token(request) == False:
             return Response(
                 "Please provide a valid token", status=status.HTTP_401_UNAUTHORIZED
             )
 
-        # verify event_id is valid UUID
+        # verify the provided event_id param is a valid UUID
         request_serializer = GetSpecificEventRequestSerializer(
             data={"event_id": event_id}
         )
@@ -175,13 +184,13 @@ class GetSpecificEventView(APIView):
         if request_serializer.is_valid():
 
             try:
-                # check to see if event_id exists
-                result = Event.objects.get(pk=str(event_id))
-                event_name = result.name
-                type = result.type
-                owner = result.owner
-                start_time_utc = result.start_time_utc
-                end_time_utc = result.end_time_utc
+                # if event_id exists
+                event = Event.objects.get(pk=str(event_id))
+                event_name = event.name
+                type = event.type
+                owner = event.owner
+                start_time_utc = event.start_time_utc
+                end_time_utc = event.end_time_utc
 
                 # get related respondents of an event
                 event_respondents: list[object] = (
@@ -202,6 +211,7 @@ class GetSpecificEventView(APIView):
                     respondents_availabilities = (
                         Availability.objects.select_related("respondentAvailability")
                         .filter(respondentAvailability_id=id)
+                        .order_by("time")
                         .values("time")
                     )
                     event_respondents_availabilities.append(
@@ -262,12 +272,14 @@ class GetSpecificEventView(APIView):
                     status=status.HTTP_200_OK,
                 )
 
+            # if event_id does not exist
             except Exception:
                 return Response(
                     f"Event id {event_id} does not exist",
                     status=status.HTTP_404_NOT_FOUND,
                 )
 
+        # if event_id is not a valid uuid
         else:
             return Response(
                 f"Event id {event_id} is not a valid event_id",

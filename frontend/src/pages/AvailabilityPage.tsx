@@ -1,13 +1,12 @@
+import Header from "@/components/(shared)/Header";
 import UnAuthenticatedAvailabilityBody from "@/layout/(unauthenticated)/UnAuthenticatedAvailabilityBody";
-import UnAuthenticatedSecondaryHeader from "@/layout/(unauthenticated)/UnAuthenticatedSecondaryHeader";
 import { GetSingleEventResponseDataTypeLocal } from "@/types/type";
 
 import { useState } from "react";
-import { useNavigate, useParams, useLoaderData } from "react-router-dom";
+import { useParams, useLoaderData } from "react-router-dom";
 
 const AvailabilityPage = () => {
   const { eventId } = useParams();
-  const navigate = useNavigate();
   const loadedData: GetSingleEventResponseDataTypeLocal = useLoaderData();
   console.log(`AvailabilityPage:: eventId:: ${eventId}`);
 
@@ -18,7 +17,8 @@ const AvailabilityPage = () => {
 
   return (
     <div className="min-h-screen flex flex-col">
-      <UnAuthenticatedSecondaryHeader />
+      {/* <UnAuthenticatedSecondaryHeader /> */}
+      <Header />
       <UnAuthenticatedAvailabilityBody eventData={eventData} />
     </div>
   );
