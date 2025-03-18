@@ -1,4 +1,4 @@
-import { SignedIn, SignedOut, useUser } from "@clerk/clerk-react";
+import { SignedIn, SignedOut, useAuth, useUser } from "@clerk/clerk-react";
 import { useEffect, useRef } from "react";
 import Header from "@/components/(shared)/Header";
 import FAQ from "@/components/(unauthenticated)/(mainbody)/FAQ";
@@ -6,17 +6,24 @@ import Footer from "@/layout/(shared)/Footer";
 import HowItWorks from "@/components/(unauthenticated)/(mainbody)/HowItWorks";
 import MainBody from "@/layout/(shared)/MainBody";
 import { useNavigate } from "react-router-dom";
-
+import { Toaster } from "sonner";
+import { USERID } from "@/utils/constants";
 const HomePage = () => {
   console.log("HomePage reloaded");
   const navigate = useNavigate();
   const { isSignedIn } = useUser();
+  const auth = useAuth();
 
-  // Authenticated user to "/home"
-  // Non-authenticated user to "/"
+  // Authenticated user to "/home" & save userid in localstorage
+  // Non-authenticated user to "/" and clear userid in localstorage
   useEffect(() => {
-    if (isSignedIn) navigate("/home");
-    else navigate("/");
+    if (isSignedIn) {
+      navigate("/home");
+      localStorage.setItem(USERID, auth.userId as string);
+    } else {
+      navigate("/");
+      localStorage.removeItem(USERID);
+    }
   }, []);
 
   const howItWorksRef = useRef<HTMLDivElement | null>(null);
@@ -40,6 +47,7 @@ const HomePage = () => {
         <FAQ faqRef={faqRef} />
         <Footer />
       </SignedIn>
+      <Toaster />
     </>
   );
 };

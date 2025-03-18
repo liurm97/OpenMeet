@@ -1,4 +1,4 @@
-import { Plus } from "lucide-react";
+import { CheckCheck, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Copy } from "lucide-react";
 import {
@@ -11,6 +11,7 @@ import { useTableDragSelect } from "use-table-drag-select";
 import { useState } from "react";
 import { buildDefaultDateTimeObject } from "@/utils/availabilityAction";
 import ReadOnlyAvailabilityTable from "@/components/(shared)/ReadOnlyAvailabilityTable";
+import { toast } from "sonner";
 
 const UnAuthenticatedAvailabilityBody = ({
   eventData,
@@ -79,7 +80,22 @@ const UnAuthenticatedAvailabilityBody = ({
             </button>
           </div>
           <div className="flex items-center gap-2 justify-center [@media(max-width:770px)]:flex-col">
-            <Button variant="outline" className="flex items-center">
+            <Button
+              variant="outline"
+              className="flex items-center"
+              onClick={() => {
+                navigator.clipboard.writeText(window.location.href);
+                toast(
+                  <div className="flex flex-row gap-2">
+                    <CheckCheck size={48} className="text-green-600" />
+                    <p>
+                      Copied{" "}
+                      <span className="font-bold">{window.location.href}</span>
+                    </p>
+                  </div>
+                );
+              }}
+            >
               <Copy />
               <span>Copy link</span>
             </Button>

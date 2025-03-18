@@ -58,7 +58,7 @@ const formSchema = z.object({
 });
 
 const CreateEventForm = () => {
-  const auth = useAuth();
+  const { isSignedIn } = useAuth();
   const [eventType, setEventType] = useState<EventType>(
     EventType.SPECIFIC_DATES
   );
@@ -110,7 +110,7 @@ const CreateEventForm = () => {
       console.log(endTimeUTC);
 
       // owner value
-      if (auth.isSignedIn === false) {
+      if (isSignedIn === false) {
         owner = "-1";
       } else {
         owner = auth.userId!;
@@ -167,15 +167,15 @@ const CreateEventForm = () => {
       if (status == 201) {
         const { id }: { id: string } = data;
         console.log(`id:: ${id}`);
-        setIsLoading(false);
         navigate(`/event/${id}`);
       } else if (status == 500 || status == 400) {
-        setIsLoading(false);
         navigate("/");
       }
     } catch (error) {
       console.error("Form submission error", error);
       toast.error("Failed to submit the form. Please try again.");
+    } finally {
+      setIsLoading(false);
     }
   }
 
@@ -274,9 +274,9 @@ const CreateEventForm = () => {
                 <Select
                   onValueChange={(newVal: string) => {
                     console.log(`newVal:: ${newVal}`);
-                    if (Number(newVal) == 1)
+                    if (Number(newVal) == 1) {
                       setEventType(EventType.SPECIFIC_DATES);
-                    else setEventType(EventType.DAYS_OF_THE_WEEK);
+                    } else setEventType(EventType.DAYS_OF_THE_WEEK);
                     field.onChange(Number(newVal));
                   }}
                 >
@@ -310,7 +310,6 @@ const CreateEventForm = () => {
                   mode="multiple"
                   selected={field.value as Date[]}
                   onSelect={(val) => field.onChange(val)}
-                  max={5}
                 />
               </FormItem>
             )}

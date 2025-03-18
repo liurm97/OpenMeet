@@ -20,9 +20,8 @@ const Header = ({
   const { isSignedIn } = useUser();
   const pathname = useLocation().pathname;
 
+  // Regex to check if user has arrived at the Event availability page
   const availabilityPageRegex = /event\/[0-9a-z-]+/g;
-
-  // If user is currently signed in or has arrived at Event availability page
   const shouldRenderSecondaryHeader = pathname.match(availabilityPageRegex);
 
   return shouldRenderSecondaryHeader ? (
