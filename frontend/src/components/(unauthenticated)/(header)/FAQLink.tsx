@@ -1,3 +1,5 @@
+import { MessageCircleQuestion } from "lucide-react";
+
 const FAQLink = ({
   faqRef,
 }: {
@@ -5,7 +7,7 @@ const FAQLink = ({
 }) => {
   return (
     <button
-      className="text-sm hover:text-gray-600"
+      className="text-sm hover:text-gray-600 hover:underline hover:underline-offset-4 gap-1 flex flex-row items-center"
       onClick={() =>
         faqRef.current?.scrollIntoView({
           behavior: "smooth",
@@ -14,7 +16,10 @@ const FAQLink = ({
         })
       }
     >
-      <span aria-label="span-FAQ">FAQ</span>
+      <MessageCircleQuestion />
+      <span className="[@media(max-width:770px)]:hidden" aria-label="span-FAQ">
+        FAQ
+      </span>
     </button>
   );
 };

@@ -20,11 +20,10 @@ const Header = ({
   const { isSignedIn } = useUser();
   const pathname = useLocation().pathname;
 
-  // If user is currently signed in or has arrived at Event availability page
-  const shouldRenderSecondaryHeader = isSignedIn || pathname.includes("/event");
+  const availabilityPageRegex = /event\/[0-9a-z-]+/g;
 
-  // If user has arrived at Event availability page
-  const shouldRenderAddNewEventButton = pathname.includes("/event");
+  // If user is currently signed in or has arrived at Event availability page
+  const shouldRenderSecondaryHeader = pathname.match(availabilityPageRegex);
 
   return shouldRenderSecondaryHeader ? (
     <header className="border-b">
@@ -33,9 +32,7 @@ const Header = ({
         <nav className="flex items-center gap-4 [@media(max-width:550px)]:gap-1">
           <GiveFeedback />
           <TreatCoffee />
-
-          {/* If user arrives on Event AvailabilityPage */}
-          {shouldRenderAddNewEventButton && <AddNewEventButton />}
+          <AddNewEventButton />
 
           {/* If user arrives on Event AvailabilityPage and is signed in */}
           {isSignedIn && <Avatar />}
@@ -52,7 +49,9 @@ const Header = ({
         <nav className="flex items-center space-x-8">
           <HowItWorksLink howItWorksRef={howItWorksRef!} />
           <FAQLink faqRef={faqRef!} />
-          <ClerkSignIn />
+          {isSignedIn && <Avatar />}
+
+          {!isSignedIn && <ClerkSignIn />}
         </nav>
       </div>
     </header>

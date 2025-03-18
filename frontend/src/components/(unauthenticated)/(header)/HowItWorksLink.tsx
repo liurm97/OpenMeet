@@ -1,3 +1,5 @@
+import { Compass } from "lucide-react";
+
 const HowItWorksLink = ({
   howItWorksRef,
 }: {
@@ -5,14 +7,15 @@ const HowItWorksLink = ({
 }) => {
   return (
     <button
-      className="text-sm hover:text-gray-600 how-it-works"
+      className="text-sm hover:text-gray-600 how-it-works hover:underline hover:underline-offset-4 flex flex-row items-center gap-1"
       onClick={() =>
         howItWorksRef.current?.scrollIntoView({
           behavior: "smooth",
         })
       }
     >
-      How it works
+      <Compass />
+      <span className="[@media(max-width:770px)]:hidden">How it works</span>
     </button>
   );
 };

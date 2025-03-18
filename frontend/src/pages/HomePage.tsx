@@ -34,8 +34,11 @@ const HomePage = () => {
 
       {/* If current user is signed in */}
       <SignedIn>
-        <Header />
+        <Header howItWorksRef={howItWorksRef} faqRef={faqRef} />
         <MainBody />
+        <HowItWorks howItWorksRef={howItWorksRef} />
+        <FAQ faqRef={faqRef} />
+        <Footer />
       </SignedIn>
     </>
   );
