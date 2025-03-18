@@ -1,9 +1,9 @@
 import { SignedIn, SignedOut, useUser } from "@clerk/clerk-react";
 import { useEffect, useRef } from "react";
 import Header from "@/components/(shared)/Header";
-import FAQ from "@/components/(unauthenticated)/MainBody/FAQ";
+import FAQ from "@/components/(unauthenticated)/(mainbody)/FAQ";
 import Footer from "@/layout/(shared)/Footer";
-import HowItWorks from "@/components/(unauthenticated)/MainBody/HowItWorks";
+import HowItWorks from "@/components/(unauthenticated)/(mainbody)/HowItWorks";
 import MainBody from "@/layout/(shared)/MainBody";
 import { useNavigate } from "react-router-dom";
 

@@ -1,5 +1,5 @@
 import Header from "@/components/(shared)/Header";
-import UnAuthenticatedAvailabilityBody from "@/layout/(unauthenticated)/UnAuthenticatedAvailabilityBody";
+import AvailabilityBody from "@/layout/(shared)/AvailabilityBody";
 import { GetSingleEventResponseDataTypeLocal } from "@/types/type";
 
 import { useState } from "react";
@@ -17,9 +17,9 @@ const AvailabilityPage = () => {
 
   return (
     <div className="min-h-screen flex flex-col">
-      {/* <UnAuthenticatedSecondaryHeader /> */}
+      {/* < /> */}
       <Header />
-      <UnAuthenticatedAvailabilityBody eventData={eventData} />
+      <AvailabilityBody eventData={eventData} />
     </div>
   );
 };

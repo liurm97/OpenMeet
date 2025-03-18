@@ -78,13 +78,14 @@ const UnAuthenticatedAvailabilityBody = ({
               <span>Agenda</span>
             </button>
           </div>
-          <div className="flex space-x-4">
-            <Button variant="outline" className="flex items-center space-x-2">
-              <Copy className="h-4 w-4" />
+          <div className="flex items-center gap-2 justify-center [@media(max-width:770px)]:flex-col">
+            <Button variant="outline" className="flex items-center">
+              <Copy />
               <span>Copy link</span>
             </Button>
-            <Button className="bg-black text-white hover:bg-gray-800">
-              Add availability
+            <Button className="bg-black text-white hover:bg-gray-800 flex flex-row">
+              {" "}
+              <Plus /> <span>Availability</span>
             </Button>
           </div>
         </div>

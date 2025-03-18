@@ -2,7 +2,7 @@ import { render, screen } from "@testing-library/react";
 import { describe, it, expect, beforeEach } from "vitest";
 import "@testing-library/jest-dom/vitest";
 import { MemoryRouter } from "react-router-dom";
-import HowItWorksLink from "@/components/(unauthenticated)/Header/HowItWorksLink";
+import HowItWorksLink from "@/components/(unauthenticated)/(header)/HowItWorksLink";
 import userEvent from "@testing-library/user-event";
 
 export function changeWindowLocation(newLocation: string) {
