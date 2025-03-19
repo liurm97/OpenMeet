@@ -25,10 +25,10 @@ const Header = ({
   const shouldRenderSecondaryHeader = pathname.match(availabilityPageRegex);
 
   return shouldRenderSecondaryHeader ? (
-    <header className="border-b">
-      <div className="container mx-auto px-4 h-16 flex items-center justify-between">
+    <header className="border-b pb-2 [@media(max-width:400px)]:pb-12">
+      <div className="container mx-auto px-4 h-16 flex items-center justify-between [@media(max-width:400px)]:flex-col [@media(max-width:400px)]:items-center">
         <Logo isSignedIn={isSignedIn} />
-        <nav className="flex items-center gap-4 [@media(max-width:550px)]:gap-1">
+        <nav className="flex items-center justify-center gap-4 [@media(max-width:400px)]:gap-3">
           <GiveFeedback />
           <TreatCoffee />
           <AddNewEventButton />

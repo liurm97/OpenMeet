@@ -169,10 +169,20 @@ export const buildDefaultDateTimeObject = (
     - Use start_time, end_time, event_dates/event_days
     - build nested boolean array with time values
     - Example output:
+        type = 1
         [
             [2020-01-02 09:00, 2020-01-08 09:00],
             [2020-01-02 09:30, 2020-01-08 09:30],
         ]
+
+        OR
+
+        type = 2
+        [
+            [Monday 09:00, Friday 09:00],
+            [Monday 09:30, Friday 09:30],
+        ]
+
 */
   {
     let eventDates: EventDate[] | undefined, eventDays: EventDay[] | undefined;

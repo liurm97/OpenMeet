@@ -24,3 +24,13 @@ export const TIME_PICKER_OPTIONS = [
   { value: "22:00:00", label: "10 pm" },
   { value: "23:00:00", label: "11 pm" },
 ];
+
+export const SHORTENED_DAY_OF_WEEK = {
+  Monday: "Mon",
+  Tuesday: "Tues",
+  Wednesday: "Wed",
+  Thursday: "Thurs",
+  Friday: "Fri",
+  Saturday: "Sat",
+  Sunday: "Sun",
+};
