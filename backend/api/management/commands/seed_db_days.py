@@ -29,13 +29,13 @@ class Command(BaseCommand):
             "isGuestRespondent": True,
             "respondentAvailabilities": [
                 {
-                    "time": "Monday 09:00",
+                    "time_utc": "Monday 09:00",
                 },
                 {
-                    "time": "Monday 10:00",
+                    "time_utc": "Monday 10:00",
                 },
                 {
-                    "time": "Monday 11:00",
+                    "time_utc": "Monday 10:30",
                 },
             ],
         },
@@ -44,13 +44,16 @@ class Command(BaseCommand):
             "isGuestRespondent": True,
             "respondentAvailabilities": [
                 {
-                    "time": "Wednesday 09:00",
+                    "time_utc": "Monday 09:00",
                 },
                 {
-                    "time": "Wednesday 10:00",
+                    "time_utc": "Wednesday 09:00",
                 },
                 {
-                    "time": "Wednesday 11:00",
+                    "time_utc": "Wednesday 10:00",
+                },
+                {
+                    "time_utc": "Wednesday 10:30",
                 },
             ],
         },

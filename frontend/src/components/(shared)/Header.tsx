@@ -42,7 +42,7 @@ const Header = ({
       </div>
     </header>
   ) : (
-    <header className="border-b">
+    <header className="border-b pb-2">
       <div className="container mx-auto px-4 h-16 flex items-center justify-between">
         <Logo />
         <nav className="flex items-center space-x-8">

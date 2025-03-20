@@ -1,4 +1,5 @@
 import { EventDate, EventDay } from "@/types/type";
+import { COMMON_AVAILABILITY_COLOR } from "@/utils/globals";
 import { forwardRef } from "react";
 
 interface Props {
@@ -6,12 +7,10 @@ interface Props {
   eventDates?: EventDate[] | undefined;
   eventDays?: EventDay[] | undefined;
   timeArray: string[];
+  commonArray: number[][];
 }
-
 const ReadOnlyAvailabilityTable = forwardRef<HTMLTableElement, Props>(
-  ({ value, eventDates, eventDays, timeArray }) => {
-    // console.log(value);
-    value[0][0] = true;
+  ({ value, eventDates, eventDays, timeArray, commonArray }) => {
     return (
       <>
         <div className="flex flex-col justify-self-end">
@@ -53,7 +52,12 @@ const ReadOnlyAvailabilityTable = forwardRef<HTMLTableElement, Props>(
                     key={columnIndex}
                     className={`border-x border-y border-gray-200 border-dashed size-6 w-full
                     ${
-                      value[rowIndex][columnIndex] ? "bg-sky-500" : "bg-white"
+                      value[rowIndex][columnIndex]
+                        ? COMMON_AVAILABILITY_COLOR.filter(
+                            (obj) =>
+                              obj.number == commonArray[rowIndex][columnIndex]
+                          )[0].color
+                        : "bg-transparent"
                     }`}
                   />
                 ))}

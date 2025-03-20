@@ -13,12 +13,14 @@ const AvailabilityGrid = ({
   valueReadAvailabilityTable,
   eventData,
   timeArray,
+  commonArray,
 }: {
   useTableRef: React.RefObject<HTMLTableElement>;
   useTableValue: boolean[][];
   valueReadAvailabilityTable: boolean[][];
   eventData: GetSingleEventResponseDataTypeLocal;
   timeArray: string[];
+  commonArray: number[][];
 }) => {
   return (
     <div className="flex flex-col lg:flex-row gap-2 border border-black p-4">
@@ -29,6 +31,7 @@ const AvailabilityGrid = ({
           eventDates={eventData?.event_dates as EventDate[]}
           eventDays={eventData?.event_days as EventDay[]}
           timeArray={timeArray}
+          commonArray={commonArray}
         />
         {eventData?.type == 1 ? (
           <WriteAvailabilityTable

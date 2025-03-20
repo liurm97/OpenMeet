@@ -52,7 +52,9 @@ const WriteAvailabilityTable = forwardRef<HTMLTableElement, Props>(
                     key={columnIndex}
                     className={`border-x border-y border-gray-200 border-dashed size-6 w-full
                     ${
-                      value[rowIndex][columnIndex] ? "bg-sky-500" : "bg-white"
+                      value[rowIndex][columnIndex]
+                        ? "bg-sky-500"
+                        : "bg-transparent"
                     }`}
                   />
                 ))}

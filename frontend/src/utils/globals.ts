@@ -34,3 +34,11 @@ export const SHORTENED_DAY_OF_WEEK = {
   Saturday: "Sat",
   Sunday: "Sun",
 };
+
+export const COMMON_AVAILABILITY_COLOR = [
+  { number: 0, color: "bg-transparent" }, // 0 respondent
+  { number: 1, color: "bg-sky-200" }, // 1 respondent
+  { number: 2, color: "bg-sky-300" }, // 2 respondents
+  { number: 3, color: "bg-sky-400" }, // 3 respondents
+  { number: 4, color: "bg-sky-600" }, // >= 4 respondents
+];

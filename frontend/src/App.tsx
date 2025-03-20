@@ -1,7 +1,7 @@
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import ErrorPage from "./pages/ErrorPage";
 import AvailabilityPage from "./pages/AvailabilityPage";
-import { fetchSingleEventData } from "./utils/routerAction";
+import { fetchSingleEventData } from "./utils/routeAction";
 import HomePage from "./pages/HomePage";
 
 // Router

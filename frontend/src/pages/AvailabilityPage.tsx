@@ -16,7 +16,9 @@ const AvailabilityPage = () => {
   console.log(`AvailabilityPage:: eventId:: ${eventId}`);
 
   useEffect(() => {
+    // If user is authenticated - save userId in localStorage
     if (isSignedIn) localStorage.setItem(USERID, auth.userId as string);
+    // Else clear userId in localStorage
     else localStorage.removeItem(USERID);
   }, []);
 
@@ -27,8 +29,8 @@ const AvailabilityPage = () => {
 
   return (
     <div className="min-h-screen flex flex-col">
-      {/* < /> */}
       <Header />
+      {/* Receives event data to dynamically render event details */}
       <AvailabilityBody eventData={eventData} />
       <Toaster />
     </div>

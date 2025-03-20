@@ -28,6 +28,8 @@ class Event(models.Model):
 
     @type: from input form
 
+    @agenda: after event is created, user
+
     @startTime: from input form
 
     @endTime: from input form
@@ -52,6 +54,8 @@ class Event(models.Model):
     name = models.CharField(max_length=200, null=False, blank=False)
 
     type = models.IntegerField(choices=EventType.choices, blank=False, null=False)
+
+    agenda = models.TextField(default="", blank=True, null=True)
 
     start_time_utc = models.CharField(
         default="09:00",
@@ -224,7 +228,7 @@ class Availability(models.Model):
     """
 
     id = models.CharField(primary_key=True, db_index=True, default=uuid4())
-    time = models.CharField(
+    time_utc = models.CharField(
         null=False,
         blank=False,
         validators=[

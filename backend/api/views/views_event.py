@@ -10,6 +10,7 @@ from ..serializers.serializers_event import (
     CreateEventRequestBodyFieldSerializer,
     CreateEventSerializer,
     GetSpecificEventRequestSerializer,
+    UpdateSpecificEventRequestSerializer,
 )
 from ..serializers.serializers_date import DateSerializer
 
@@ -132,7 +133,7 @@ class CreateEventView(APIView):
             )
 
 
-class GetSpecificEventView(APIView):
+class SpecificEventView(APIView):
 
     permission_classes = [AllowAny]
     """
@@ -191,6 +192,7 @@ class GetSpecificEventView(APIView):
                 owner = event.owner
                 start_time_utc = event.start_time_utc
                 end_time_utc = event.end_time_utc
+                agenda = event.agenda
 
                 # get related respondents of an event
                 event_respondents: list[object] = (
@@ -211,8 +213,8 @@ class GetSpecificEventView(APIView):
                     respondents_availabilities = (
                         Availability.objects.select_related("respondentAvailability")
                         .filter(respondentAvailability_id=id)
-                        .order_by("time")
-                        .values("time")
+                        .order_by("time_utc")
+                        .values("time_utc")
                     )
                     event_respondents_availabilities.append(
                         {
@@ -237,6 +239,7 @@ class GetSpecificEventView(APIView):
                         "name": event_name,
                         "owner": owner,
                         "type": type,
+                        "agenda": agenda,
                         "start_time_utc": start_time_utc,
                         "end_time_utc": end_time_utc,
                         "event_respondents": event_respondents,
@@ -259,6 +262,7 @@ class GetSpecificEventView(APIView):
                         "name": event_name,
                         "owner": owner,
                         "type": type,
+                        "agenda": agenda,
                         "start_time_utc": start_time_utc,
                         "end_time_utc": end_time_utc,
                         "event_respondents": event_respondents,
@@ -286,33 +290,55 @@ class GetSpecificEventView(APIView):
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
-
-class UpdateSpecificEventView(APIView):
-    """
-    View to update existing event
-
-    Pre-requisite:
-
-        - IF event was created by signed-in user, event can only be updated by signed-in user (owner).
-
-        - ELSE, event can be updated by anyone.
-
-        ** Note: Only the following event fields can be updated **
-
-        - Event name
-
-        - Event start time (i.e extend start time)
-
-        - Event end time (i.e shorten end time)
-    """
-
     def patch(self, request, event_id):
-        pass
+        text = request.data.get("text")
+        field = request.data.get("field")
 
-        # check that event_id is valid
+        if validate_auth_token(request) == False:
+            return Response(
+                "Please provide a valid token", status=status.HTTP_401_UNAUTHORIZED
+            )
 
-        # get owner of the event
+        else:
+            request_serializer = UpdateSpecificEventRequestSerializer(
+                data={"event_id": event_id, "field": field, "text": text}
+            )
 
-        # if owner = -1 -> OK to update
+            if request_serializer.is_valid():
+                # if event_id exists
+                try:
+                    event_to_update = Event.objects.filter(id=event_id)
 
-        # if owner != -1 -> get current user_id of currently signed_in user -> if user_id of current sign_in owner = owner_id -> OK to update
+                    if field == "agenda":
+                        existing_agenda_val = event_to_update.values("agenda")[0].get(
+                            "agenda"
+                        )
+                        event_to_update.update(agenda=text)
+                        updated_event_obj = {
+                            "event_id": Event.objects.get(id=event_id).id,
+                            "previous_agenda": existing_agenda_val,
+                            "new_agenda": Event.objects.get(id=event_id).agenda,
+                        }
+                    elif field == "name":
+                        existing_name_val = event_to_update.values("name")[0].get(
+                            "name"
+                        )
+                        event_to_update.update(name=text)
+                        updated_event_obj = {
+                            "event_id": Event.objects.get(id=event_id).id,
+                            "previous_event_name": existing_name_val,
+                            "new_event_name": Event.objects.get(id=event_id).name,
+                        }
+                    return Response(updated_event_obj, status=status.HTTP_200_OK)
+
+                except Exception as e:
+                    return Response(
+                        f"The ({event_id}) you provided may not exist. Please try again.",
+                        status=status.HTTP_200_OK,
+                    )
+
+            else:
+                return Response(
+                    f"NOT OK {request_serializer.errors}",
+                    status=status.HTTP_400_BAD_REQUEST,
+                )

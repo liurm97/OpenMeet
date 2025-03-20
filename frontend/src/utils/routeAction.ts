@@ -1,4 +1,4 @@
-import { getSingleEvent } from "@/services/api/api";
+import { getSingleEvent, patchSingleEvent } from "@/services/api/api";
 import {
   EventDate,
   EventDay,
@@ -8,7 +8,6 @@ import { formatCalendarDateLocal, formatCalendarTimeLocal } from "./formatter";
 
 export const fetchSingleEventData = async (eventId: string) => {
   const eventResponse = await getSingleEvent(eventId);
-  const eventResponseData = eventResponse.data;
   if (eventResponse.status == 200) {
     let formattedEventResponse: GetSingleEventResponseDataTypeLocal;
     let eventDates: EventDate[] | undefined;
@@ -24,6 +23,7 @@ export const fetchSingleEventData = async (eventId: string) => {
     const utcEndTime = data?.end_time_utc;
     const localEndTime = formatCalendarTimeLocal(utcEndTime!);
     const type = data?.type as number;
+    const agenda = data?.agenda as string;
     if (type == 1) {
       eventDates = data?.event_dates?.map((_date) => {
         const date = _date.date as Date;
@@ -38,6 +38,7 @@ export const fetchSingleEventData = async (eventId: string) => {
           owner: owner,
           name: name,
           type: type,
+          agenda: agenda,
           event_respondents: eventRespondent,
           start_time_local: localStartTime,
           end_time_local: localEndTime,
@@ -58,6 +59,7 @@ export const fetchSingleEventData = async (eventId: string) => {
           owner: owner,
           name: name,
           type: type,
+          agenda: agenda,
           event_respondents: eventRespondent,
           start_time_local: localStartTime,
           end_time_local: localEndTime,
@@ -68,5 +70,18 @@ export const fetchSingleEventData = async (eventId: string) => {
     }
 
     return formattedEventResponse;
+  }
+};
+
+export const updateSingleEventAgenda = async (
+  text: string,
+  field: string,
+  eventId: string
+) => {
+  const updateResponse = await patchSingleEvent(text, field, eventId);
+  if (updateResponse.status == 200) {
+    return updateResponse.data;
+  } else {
+    throw new Error("Something went wrong while updating event!");
   }
 };

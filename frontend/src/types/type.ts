@@ -7,7 +7,7 @@ export type EventDay = {
 };
 
 export type EventTime = {
-  time: string;
+  time_utc: string;
 };
 
 export type EventAvailability = {
@@ -48,6 +48,7 @@ export type GetSingleEventResponseDataTypeUTC =
       name: string;
       owner: string;
       type: number;
+      agenda: string;
       start_time_utc: string;
       end_time_utc: string;
       event_respondents: EventRespondent[] | [] | undefined;
@@ -63,6 +64,7 @@ export type GetSingleEventResponseDataTypeLocal =
       name: string;
       owner: string;
       type: number;
+      agenda: string;
       start_time_local: string;
       end_time_local: string;
       event_respondents: EventRespondent[] | [] | undefined;
@@ -74,5 +76,14 @@ export type GetSingleEventResponseDataTypeLocal =
 
 export type DefaultDateTimeObjectType = {
   shape: boolean[][];
+  common: number[][];
   availability: string[][];
+};
+
+export type PatchSingleEventResponseType = {
+  event_id: string;
+  previous_agenda?: string;
+  new_agenda?: string;
+  previous_event_name?: string;
+  new_event_name?: string;
 };

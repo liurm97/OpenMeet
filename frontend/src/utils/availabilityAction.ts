@@ -70,6 +70,7 @@ const pushTimeToArray = (
       // push HH:mm string to array
       timeArray.push(dayjs(timeString1).format("HH:mm"));
 
+      // increment timeString by interval duration
       timeString1 = dayjs(timeString1)
         .add(interval, "minute")
         .format("YYYY-MM-DD HH:mm:ss");
@@ -188,13 +189,13 @@ export const buildDefaultDateTimeObject = (
     let eventDates: EventDate[] | undefined, eventDays: EventDay[] | undefined;
 
     const dateTimeArray: string[][] = [];
+    const commonArray: number[][] = [];
     const startTimeLocal = prop?.start_time_local as string;
-    // const startTimeLocal = prop.start_time_local as string;
     const endTimeLocal = prop?.end_time_local as string;
-    // const endTimeLocal = prop.end_time_local as string;
-
     const interval = 30;
 
+    // Construct timeArray based on startTimeLocal and endTimeLocal
+    // i.e: timeArray = ["09:00:00", "09:30:00", "10:00:00", "10:30:00"]
     const timeArray = buildTimeArray(startTimeLocal, endTimeLocal, interval);
 
     // build dateTimeArray `string[][]`
@@ -202,27 +203,50 @@ export const buildDefaultDateTimeObject = (
       eventDates = prop?.event_dates;
       //   eventDates = prop.event_dates;
       eventDates!.map((_date) => {
-        const date = _date.date; // date = 2020-01-02
+        const date = _date.date; // i.e: date = "2020-01-02"
 
         const row: string[] = [];
         timeArray.map((time) => {
-          //time = "09:00:00"
+          // i.e: time = "09:00:00"
 
           const d = dayjs(`${date}${time}`).format("YYYY-MM-DD HH:mm");
           row.push(d);
         });
         dateTimeArray.push(row);
-        // compute time difference
+      });
+
+      // Generate commonArray
+      const availabilities = prop?.event_availabilities;
+      const formattedAvailabilities = availabilities?.map((availability) =>
+        availability.availabilities.map((avail) => avail.time_utc)
+      );
+      const formattedAvailabilitiesFlattened = formattedAvailabilities?.flat();
+      const formattedAvailabilitiesFlattenedLocal =
+        formattedAvailabilitiesFlattened?.map((avail_utc) =>
+          dayjs(new Date(`${avail_utc} UTC`).toString()).format(
+            "YYYY-MM-DD HH:mm"
+          )
+        );
+
+      dateTimeArray.forEach((dtArr) => {
+        const row = new Array(dtArr.length).fill(0);
+        dtArr.forEach((dt, dt_ind) => {
+          formattedAvailabilitiesFlattenedLocal?.forEach((avail_local) => {
+            if (dt === avail_local) {
+              row[dt_ind] += 1;
+            }
+          });
+        });
+        commonArray.push(row);
       });
     } else if (type === 2) {
       eventDays = prop?.event_days;
-      //   eventDays = prop.event_days;
       eventDays!.map((_day) => {
-        const day = _day.day; // day = "Monday"
+        const day = _day.day; // i.e: day = "Monday"
 
         const row: string[] = [];
         timeArray.map((time) => {
-          //time = "09:00:00"
+          //i.e: time = "09:00:00"
 
           const d = `${day} ${time}`;
           row.push(d);
@@ -231,13 +255,14 @@ export const buildDefaultDateTimeObject = (
       });
     }
 
-    // build dateTimeShape array `boolean[][]`
-    const dateTimeShape: boolean[][] = dateTimeArray.map((_arr) =>
-      _arr.map((_val) => (_val ? false : false))
+    // build shape array `boolean[][]`
+    const dateTimeShape: boolean[][] = commonArray.map((_arr) =>
+      _arr.map((_val) => (_val == 0 ? false : true))
     );
 
     return {
       shape: dateTimeShape,
+      common: commonArray,
       availability: dateTimeArray,
     };
   };

@@ -29,16 +29,16 @@ class Command(BaseCommand):
             "isGuestRespondent": True,
             "respondentAvailabilities": [
                 {
-                    "time": "2020-01-02 09:00",
+                    "time_utc": "2020-01-02 09:00",
                 },
                 {
-                    "time": "2020-01-02 10:00",
+                    "time_utc": "2020-01-02 10:00",
                 },
                 {
-                    "time": "2020-01-02 11:00",
+                    "time_utc": "2020-01-02 10:30",
                 },
                 {
-                    "time": "2020-01-28 09:00",
+                    "time_utc": "2020-01-28 09:00",
                 },
             ],
         },
@@ -47,16 +47,16 @@ class Command(BaseCommand):
             "isGuestRespondent": True,
             "respondentAvailabilities": [
                 {
-                    "time": "2020-01-28 09:00",
+                    "time_utc": "2020-01-28 09:00",
                 },
                 {
-                    "time": "2020-01-28 10:00",
+                    "time_utc": "2020-01-28 10:00",
                 },
                 {
-                    "time": "2020-01-28 11:00",
+                    "time_utc": "2020-01-28 10:30",
                 },
                 {
-                    "time": "2020-01-02 11:00",
+                    "time_utc": "2020-01-02 10:00",
                 },
             ],
         },

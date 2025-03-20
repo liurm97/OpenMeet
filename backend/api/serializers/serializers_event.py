@@ -8,6 +8,7 @@ from ..models import Event, Availability, Date, Day, Respondent
 from datetime import datetime
 from uuid import uuid4
 from django.core.validators import RegexValidator
+from django.core.exceptions import ValidationError
 from copy import deepcopy
 from .serializers_date import DateSerializer
 from .serializers_day import DaySerializer
@@ -159,6 +160,26 @@ class GetSpecificEventRequestSerializer(serializers.Serializer):
 
     class Meta:
         fields = ["event_id"]
+
+
+class UpdateSpecificEventRequestSerializer(serializers.Serializer):
+    """
+    Serializer for GET /events/<event_id> to verify that `event_id` is provided in parameter.
+    """
+
+    event_id = serializers.UUIDField(required=True)
+    field = serializers.CharField(required=True)
+    text = serializers.CharField(required=True)
+
+    class Meta:
+        fields = ["event_id", "field", "text"]
+
+    def validate_field(self, data):
+        if data not in ["agenda", "name"]:
+            raise ValidationError(
+                f"You have provided invalid field - ({data}). Acceptable fields are ['agenda', 'name']"
+            )
+        return data
 
 
 # class GetSpecificEventResponseDateSerializer(serializers.Serializer):
