@@ -1,16 +1,59 @@
-import { EventDate, EventDay } from "@/types/type";
+import { DefaultDateTimeObjectType, EventDate, EventDay } from "@/types/type";
+import {
+  AVAILABILITYSTATE,
+  EDITUSER,
+  EDITUSERAVAILABILITY,
+} from "@/utils/constants";
 import { forwardRef } from "react";
+import { useTableDragSelect } from "use-table-drag-select";
 
 interface Props {
-  value: boolean[][];
+  eventId: string;
   eventDates?: EventDate[] | undefined;
   eventDays?: EventDay[] | undefined;
   timeArray: string[];
+  writeShape: boolean[][];
+  writeModeTypeRef: React.MutableRefObject<string | undefined>;
 }
 
 const WriteAvailabilityTable = forwardRef<HTMLTableElement, Props>(
-  ({ value, eventDates, eventDays, timeArray }, ref) => {
-    console.log(value);
+  (
+    { eventId, eventDates, eventDays, timeArray, writeShape, writeModeTypeRef },
+    ref
+  ) => {
+    const [useTableRef, useTableValue] = useTableDragSelect(writeShape);
+    const editRespondentId = localStorage.getItem(`${EDITUSER}${eventId}`);
+
+    const availabilityState = JSON.parse(
+      localStorage.getItem(`${AVAILABILITYSTATE}${eventId}`) as string
+    ) as DefaultDateTimeObjectType;
+
+    const editRespondentIdAvailability: undefined | boolean[][] = useTableValue;
+
+    // // Only if writeModeType = `edit`
+    // if (writeModeTypeRef.current == "edit") {
+    //   console.log(editRespondentId);
+    //   console.log(availabilityState);
+    //   availabilityState?.respondentAvailability
+    //     .filter((respondent) => respondent.id == editRespondentId)[0]
+    //     .availability.splice(0, useTableValue.length, ...useTableValue);
+
+    //   console.log(useTableValue);
+    //   console.log(availabilityState);
+
+    //   editRespondentIdAvailability =
+    //     availabilityState?.respondentAvailability.filter(
+    //       (respondent) => respondent.id == editRespondentId
+    //     )[0].availability;
+    // }
+
+    // console.log(useTableValue);
+    localStorage.setItem(
+      `${EDITUSERAVAILABILITY}${eventId}`,
+      JSON.stringify(editRespondentIdAvailability)
+    );
+    console.log(`after set item`);
+
     return (
       <>
         <div className="flex flex-col justify-self-end">
@@ -18,11 +61,10 @@ const WriteAvailabilityTable = forwardRef<HTMLTableElement, Props>(
           {timeArray.map((time, _ind) => (
             <div key={`time${_ind}`}>
               <div className="size-6">{time}</div>
-              <div className="size-6"></div>
             </div>
           ))}
         </div>
-        <table ref={ref} className="flex flex-col col-span-7">
+        <table ref={useTableRef} className="flex flex-col col-span-7">
           <thead className="flex-grow">
             <tr className="flex">
               {eventDays == undefined
@@ -39,7 +81,7 @@ const WriteAvailabilityTable = forwardRef<HTMLTableElement, Props>(
             </tr>
           </thead>
           <tbody className="flex">
-            {value.map((row, rowIndex) => (
+            {useTableValue.map((row, rowIndex) => (
               <tr
                 key={rowIndex}
                 className={`flex flex-col grow`}
@@ -52,8 +94,8 @@ const WriteAvailabilityTable = forwardRef<HTMLTableElement, Props>(
                     key={columnIndex}
                     className={`border-x border-y border-gray-200 border-dashed size-6 w-full
                     ${
-                      value[rowIndex][columnIndex]
-                        ? "bg-sky-500"
+                      useTableValue[rowIndex][columnIndex]
+                        ? "bg-gray-300"
                         : "bg-transparent"
                     }`}
                   />

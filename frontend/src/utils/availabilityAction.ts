@@ -9,7 +9,8 @@ import {
   DefaultDateTimeObjectType,
   EventDate,
   EventDay,
-  GetSingleEventResponseDataTypeLocal,
+  GetSingleEventResponseDataTypeLocalFormatted,
+  RespondentAvailabilityType,
 } from "@/types/type";
 
 /*
@@ -161,35 +162,26 @@ export const buildTimeArray = (
     return startToEndTimeArray;
   };
 
-export const buildDefaultDateTimeObject = (
+export const buildDefaultAvailabilityDateTimeObject = (
   type: number,
-  prop: GetSingleEventResponseDataTypeLocal
+  // mode: string,
+  prop: GetSingleEventResponseDataTypeLocalFormatted
 ): DefaultDateTimeObjectType =>
   /*
- Generate rows and columns of availability Grid
-    - Use start_time, end_time, event_dates/event_days
-    - build nested boolean array with time values
-    - Example output:
-        type = 1
-        [
-            [2020-01-02 09:00, 2020-01-08 09:00],
-            [2020-01-02 09:30, 2020-01-08 09:30],
-        ]
-
-        OR
-
-        type = 2
-        [
-            [Monday 09:00, Friday 09:00],
-            [Monday 09:30, Friday 09:30],
-        ]
+    Generate rows and columns of availability Grid for
+    <ReadOnlyAvailabilityTable/> that is the default \
+    and <WriteAvailabilityTable/> when adding availability
 
 */
   {
+    console.log("executed");
     let eventDates: EventDate[] | undefined, eventDays: EventDay[] | undefined;
 
+    let readDateTimeShape: boolean[][] = [];
+    let writeDateTimeShape: boolean[][] = [];
     const dateTimeArray: string[][] = [];
-    const commonArray: number[][] = [];
+    const readCommonArray: number[][] = [];
+    // const writeCommonArray: number[][] = [];
     const startTimeLocal = prop?.start_time_local as string;
     const endTimeLocal = prop?.end_time_local as string;
     const interval = 30;
@@ -197,11 +189,18 @@ export const buildDefaultDateTimeObject = (
     // Construct timeArray based on startTimeLocal and endTimeLocal
     // i.e: timeArray = ["09:00:00", "09:30:00", "10:00:00", "10:30:00"]
     const timeArray = buildTimeArray(startTimeLocal, endTimeLocal, interval);
+    const availabilities = prop?.event_availabilities;
 
+    const formattedAvailabilities = availabilities?.map((availability) =>
+      availability.availabilities.map((avail) => avail.time_local)
+    );
+    const formattedAvailabilitiesFlattened = formattedAvailabilities?.flat();
+
+    // Add time_local to eventData to remove formattedAvailabilitiesFlattenedLocal
+    // let formattedAvailabilitiesFlattenedLocal: string[] | undefined;
     // build dateTimeArray `string[][]`
     if (type === 1) {
       eventDates = prop?.event_dates;
-      //   eventDates = prop.event_dates;
       eventDates!.map((_date) => {
         const date = _date.date; // i.e: date = "2020-01-02"
 
@@ -213,31 +212,6 @@ export const buildDefaultDateTimeObject = (
           row.push(d);
         });
         dateTimeArray.push(row);
-      });
-
-      // Generate commonArray
-      const availabilities = prop?.event_availabilities;
-      const formattedAvailabilities = availabilities?.map((availability) =>
-        availability.availabilities.map((avail) => avail.time_utc)
-      );
-      const formattedAvailabilitiesFlattened = formattedAvailabilities?.flat();
-      const formattedAvailabilitiesFlattenedLocal =
-        formattedAvailabilitiesFlattened?.map((avail_utc) =>
-          dayjs(new Date(`${avail_utc} UTC`).toString()).format(
-            "YYYY-MM-DD HH:mm"
-          )
-        );
-
-      dateTimeArray.forEach((dtArr) => {
-        const row = new Array(dtArr.length).fill(0);
-        dtArr.forEach((dt, dt_ind) => {
-          formattedAvailabilitiesFlattenedLocal?.forEach((avail_local) => {
-            if (dt === avail_local) {
-              row[dt_ind] += 1;
-            }
-          });
-        });
-        commonArray.push(row);
       });
     } else if (type === 2) {
       eventDays = prop?.event_days;
@@ -255,60 +229,91 @@ export const buildDefaultDateTimeObject = (
       });
     }
 
-    // build shape array `boolean[][]`
-    const dateTimeShape: boolean[][] = commonArray.map((_arr) =>
+    // if (mode == "write") {
+    // To build an empty commonArray and dateTimeShape array with all false
+    // To render blank availability grid for add Availability action
+    // i.e: commonArray = [0,0,0,0]
+    // i.e: dateTimeShape = [false, false, false ,false]
+    // dateTimeArray.forEach(() =>
+    //   writeCommonArray.push(new Array(dateTimeArray[0].length).fill(0))
+    // );
+    // } else if (mode == "read") {
+    // To build commonArray and dateTimeShape array based on respondents' common availabilities
+    dateTimeArray.forEach((dtArr) => {
+      const row = new Array(dtArr.length).fill(0);
+      dtArr.forEach((dt, dt_ind) => {
+        formattedAvailabilitiesFlattened?.forEach((avail_local) => {
+          if (dt === avail_local) {
+            row[dt_ind] += 1;
+          }
+        });
+      });
+      readCommonArray.push(row);
+    });
+    // }
+    // build dateTimeShape based on common availabilities
+    writeDateTimeShape = dateTimeArray.map((_arr) => _arr.map(() => false));
+
+    // build dateTimeShape based on common availabilities
+    readDateTimeShape = readCommonArray.map((_arr) =>
       _arr.map((_val) => (_val == 0 ? false : true))
     );
 
+    /*
+    Construct respondent availability array
+    i.e:
+      [{
+        id: '9776ed61-ac5a-48c1-9c77-5706b47d35fc',
+        availability: [ 'Monday 17:00', 'Monday 18:00', 'Monday 18:30' ]
+      }]
+    */
+    const respondentAvailabilities = availabilities?.map((availabilities) => {
+      const respondentId = availabilities.respondent_id;
+      const respondentName = availabilities.respondent_name;
+      const respondentAvailbility = availabilities.availabilities;
+      const availability = respondentAvailbility.map(
+        (avail) => avail.time_local
+      );
+      return {
+        respondentId: respondentId,
+        respondentName: respondentName,
+        respondentAvailability: availability,
+      };
+    });
+
+    const respondentAvailabilityArray = respondentAvailabilities?.map(
+      (respondent) => {
+        const booleanAvailability = dateTimeArray.map((avail) =>
+          new Array(avail.length).fill(false)
+        );
+
+        const respondentId = respondent.respondentId;
+        const respondentName = respondent.respondentName;
+        const respondentAvailabilities = respondent.respondentAvailability;
+
+        // console.log(respondentAvailabilities);
+
+        for (let i = 0; i < dateTimeArray.length; ++i) {
+          for (let j = 0; j < dateTimeArray[i].length; ++j) {
+            const time = dateTimeArray[i][j];
+            if (respondentAvailabilities.includes(time)) {
+              booleanAvailability[i][j] = true;
+            }
+          }
+        }
+        return {
+          id: respondentId,
+          name: respondentName,
+          availability: booleanAvailability,
+        };
+      }
+    ) as RespondentAvailabilityType[];
+
     return {
-      shape: dateTimeShape,
-      common: commonArray,
+      readShape: readDateTimeShape,
+      writeShape: writeDateTimeShape,
+      common: readCommonArray,
       availability: dateTimeArray,
+      respondentAvailability: respondentAvailabilityArray,
     };
   };
-
-// const eventData = {
-//   id: "f52a51aa-5084-4b50-a5b6-954483c68578",
-//   owner: "0344802b-227c-4be4-bf9f-d2deb3a5d82e",
-//   name: "seed_db:: valid without owner 1",
-//   type: 1,
-//   event_respondents: [
-//     {
-//       id: "16479418-0484-4c42-a796-35eceeaf87d1",
-//       name: "Max Martin",
-//       isGuestRespondent: true,
-//     },
-//     {
-//       id: "b6c25f2c-6172-4054-a0b9-4f39b3205239",
-//       name: "Max Fury",
-//       isGuestRespondent: true,
-//     },
-//   ],
-//   start_time_local: "09:00:00",
-//   end_time_local: "19:00:00",
-//   //   event_dates: [{ date: "2020-01-02" }, { date: "2020-01-28" }],
-//   event_days: [{ day: "Monday" }, { day: "Friday" }],
-//   event_availabilities: [
-//     {
-//       respondent_id: "16479418-0484-4c42-a796-35eceeaf87d1",
-//       respondent_name: "Max Martin",
-//       availabilities: [
-//         { time: "2020-01-02 09:00" },
-//         { time: "2020-01-02 10:00" },
-//         { time: "2020-01-02 11:00" },
-//       ],
-//     },
-//     {
-//       respondent_id: "b6c25f2c-6172-4054-a0b9-4f39b3205239",
-//       respondent_name: "Max Fury",
-//       availabilities: [
-//         { time: "2020-01-28 09:00" },
-//         { time: "2020-01-28 10:00" },
-//         { time: "2020-01-28 11:00" },
-//       ],
-//     },
-//   ],
-// };
-
-// const dateTimeArray = buildDefaultDateTimeObject(2, eventData);
-// console.log(dateTimeArray);

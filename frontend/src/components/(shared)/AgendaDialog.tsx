@@ -47,11 +47,7 @@ const AgendaDialog = ({
     <Dialog>
       <DialogTrigger asChild>
         <button className="mt-2 text-black hover:underline flex items-center space-x-1">
-          {dialogAction === "Adding" ? (
-            <Plus size={16} />
-          ) : (
-            <Pencil size={16} />
-          )}
+          {dialogAction === "Add" ? <Plus size={16} /> : <Pencil size={16} />}
           <span>Agenda</span>
         </button>
       </DialogTrigger>

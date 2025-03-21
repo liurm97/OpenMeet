@@ -9,7 +9,7 @@ import { SHORTENED_DAY_OF_WEEK } from "./globals";
 import {
   EventDate,
   EventDay,
-  GetSingleEventResponseDataTypeLocal,
+  GetSingleEventResponseDataTypeLocalFormatted,
 } from "@/types/type";
 
 dayjs.extend(utc);
@@ -67,7 +67,7 @@ export const formatCalendarTimeLocal = (inputTimeUTC: string): string =>
 
 export const formatDateRange = (
   type: number,
-  eventData: GetSingleEventResponseDataTypeLocal | null
+  eventData: GetSingleEventResponseDataTypeLocalFormatted | null
 ): string => {
   /*
   @type: event type
@@ -110,4 +110,106 @@ export const formatDateRange = (
     dateRange = formattedDays.join(", ");
   }
   return dateRange as string;
+};
+
+export const formatDayTimeStringUTC = (dayTimeString: string) => {
+  /*
+  @dayTimeString: input daytime string i.e: Monday 09:00
+
+  Format day time string from UTC to local time
+  i.e Format Monday 09:00 UTC -> Monday 17:00 UTC+08:00
+  */
+
+  const splitted = dayTimeString.split(" ");
+  const day = splitted[0];
+  const inputTime = splitted[splitted.length - 1];
+
+  const now = new Date();
+  const date = now.getDate();
+  const year = now.getFullYear();
+  const month = now.getMonth();
+  const offSet = now.getTimezoneOffset();
+  const newDT = `${year}-${month}-${date}T${inputTime}:00`;
+  let output: string | undefined;
+  // local timezone is ahead of UTC - Add to utc time
+  if (offSet < 0) {
+    output = `${day} ${dayjs(newDT)
+      .add(Math.abs(offSet), "minute")
+      .format("HH:mm")}`;
+  } else {
+    // local timezone is before UTC - Subtract from utc time
+    output = `${day} ${dayjs(newDT)
+      .subtract(Math.abs(offSet), "minute")
+      .format("HH:mm")}`;
+  }
+
+  return output;
+};
+
+export const formatDayTimeStringLocal = (dayTimeStringLocal: string) => {
+  /*
+  @dayTimeStringLocal: input local daytime string i.e: Monday 09:00
+
+  Format day time string from local time to UTC
+  i.e Format Monday 09:00 UTC+08:00 -> Monday 01:00 UTC
+  */
+
+  const splitted = dayTimeStringLocal.split(" ");
+  const day = splitted[0];
+  const inputTime = splitted[splitted.length - 1];
+
+  const now = new Date();
+  const date = now.getDate();
+  const year = now.getFullYear();
+  const month = now.getMonth();
+  const offSet = now.getTimezoneOffset();
+  const newDT = `${year}-${month}-${date}T${inputTime}:00`;
+  let output: string | undefined;
+  // local timezone is ahead of UTC - Add to utc time
+  if (offSet > 0) {
+    output = `${day} ${dayjs(newDT)
+      .add(Math.abs(offSet), "minute")
+      .format("HH:mm")}`;
+  } else {
+    // local timezone is before UTC - Subtract from utc time
+    output = `${day} ${dayjs(newDT)
+      .subtract(Math.abs(offSet), "minute")
+      .format("HH:mm")}`;
+  }
+
+  return output;
+};
+
+export const formatAvailabilityBooleanToString = (
+  type: number,
+  inputArray: boolean[][],
+  localDateTimeArray: string[][]
+): string[] => {
+  /*
+  @inputArray: boolean input array to format
+  @localDateTimeArray: datetime array in local timezone to be used to map
+
+  Formats boolean input array to string[][] and return UTC datetime/daytime string array
+  */
+  const outputArrayLocal: string[] = [];
+  const outputArrayUTC: string[] = [];
+
+  for (let i = 0; i < inputArray.length; ++i) {
+    for (let j = 0; j < inputArray[i].length; ++j) {
+      if (inputArray[i][j]) outputArrayLocal.push(localDateTimeArray[i][j]);
+    }
+  }
+
+  if (type == 1) {
+    outputArrayLocal.forEach((localDateTime) => {
+      const format = `YYYY-MM-DD HH:mm`;
+      const raw_d = new Date(localDateTime).toISOString();
+      outputArrayUTC.push(dayjs(new Date(raw_d)).utc().format(format));
+    });
+  } else {
+    outputArrayLocal.forEach((localDayTime) =>
+      outputArrayUTC.push(formatDayTimeStringLocal(localDayTime))
+    );
+  }
+  return outputArrayUTC;
 };

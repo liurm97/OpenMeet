@@ -37,8 +37,8 @@ export const SHORTENED_DAY_OF_WEEK = {
 
 export const COMMON_AVAILABILITY_COLOR = [
   { number: 0, color: "bg-transparent" }, // 0 respondent
-  { number: 1, color: "bg-sky-200" }, // 1 respondent
-  { number: 2, color: "bg-sky-300" }, // 2 respondents
-  { number: 3, color: "bg-sky-400" }, // 3 respondents
-  { number: 4, color: "bg-sky-600" }, // >= 4 respondents
+  { number: 1, color: "bg-gray-300" }, // 1 respondent
+  { number: 2, color: "bg-gray-400" }, // 2 respondents
+  { number: 3, color: "bg-gray-500" }, // 3 respondents
+  { number: 4, color: "bg-gray-700" }, // >= 4 respondents
 ];

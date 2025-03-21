@@ -1,6 +1,7 @@
 import { EventDate, EventDay } from "@/types/type";
 import { COMMON_AVAILABILITY_COLOR } from "@/utils/globals";
 import { forwardRef } from "react";
+import { toast } from "sonner";
 
 interface Props {
   value: boolean[][];
@@ -8,17 +9,22 @@ interface Props {
   eventDays?: EventDay[] | undefined;
   timeArray: string[];
   commonArray: number[][];
+  isHovering: boolean;
 }
+
+// `ref` is intentionally removed to disable drag and drop effect
 const ReadOnlyAvailabilityTable = forwardRef<HTMLTableElement, Props>(
-  ({ value, eventDates, eventDays, timeArray, commonArray }) => {
+  (
+    { value, eventDates, eventDays, timeArray, commonArray, isHovering },
+    ref
+  ) => {
     return (
       <>
-        <div className="flex flex-col justify-self-end">
+        <div className="flex flex-col justify-self-end col-start-0">
           <div className="size-14" />
           {timeArray.map((time, _ind) => (
             <div key={`time${_ind}`}>
               <div className="size-6">{time}</div>
-              <div className="size-6"></div>
             </div>
           ))}
         </div>
@@ -45,14 +51,23 @@ const ReadOnlyAvailabilityTable = forwardRef<HTMLTableElement, Props>(
                 className={`flex flex-col grow`}
                 onClick={() => {
                   console.log("clicked");
+                  toast(
+                    <p>
+                      Hello! Click on the{" "}
+                      <span className="font-bold">+ Availability</span> button
+                      at the top right to add availability!
+                    </p>
+                  );
                 }}
               >
                 {row.map((_, columnIndex) => (
                   <td
                     key={columnIndex}
-                    className={`border-x border-y border-gray-200 border-dashed size-6 w-full
+                    className={`border-x border-y border-gray-200 border-dashed size-6 w-full border-collapse
                     ${
-                      value[rowIndex][columnIndex]
+                      isHovering && value[rowIndex][columnIndex]
+                        ? "bg-gray-200 border-gray-400"
+                        : !isHovering && value[rowIndex][columnIndex]
                         ? COMMON_AVAILABILITY_COLOR.filter(
                             (obj) =>
                               obj.number == commonArray[rowIndex][columnIndex]

@@ -98,3 +98,34 @@ export const patchSingleEvent = async (
     data: resp,
   };
 };
+
+export const patchRespondentAvailabilityInEvent = async (
+  eventId: string,
+  field: string,
+  respondentId: string,
+  respondentArray: string[]
+): Promise<{
+  status: number;
+  data: PatchSingleEventResponseType;
+}> => {
+  const result = await fetch(`${BASE_REMOTE_URL}/events/${eventId as string}`, {
+    method: "PATCH",
+    headers: {
+      Accept: "application/json",
+      "Content-Type": "application/json",
+      Authorization: PRIVATE_API_TOKEN,
+    },
+    body: JSON.stringify({
+      respondentId: respondentId,
+      respondentArray: respondentArray,
+      field: field,
+    }),
+  });
+
+  const status = result.status;
+  const resp = await result.json();
+  return {
+    status: status,
+    data: resp,
+  };
+};
