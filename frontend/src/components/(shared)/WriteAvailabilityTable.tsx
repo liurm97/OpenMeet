@@ -1,9 +1,5 @@
-import { DefaultDateTimeObjectType, EventDate, EventDay } from "@/types/type";
-import {
-  AVAILABILITYSTATE,
-  EDITUSER,
-  EDITUSERAVAILABILITY,
-} from "@/utils/constants";
+import { EventDate, EventDay } from "@/types/type";
+import { ADDUSERAVAILABILITY, EDITUSERAVAILABILITY } from "@/utils/constants";
 import { forwardRef } from "react";
 import { useTableDragSelect } from "use-table-drag-select";
 
@@ -22,37 +18,19 @@ const WriteAvailabilityTable = forwardRef<HTMLTableElement, Props>(
     ref
   ) => {
     const [useTableRef, useTableValue] = useTableDragSelect(writeShape);
-    const editRespondentId = localStorage.getItem(`${EDITUSER}${eventId}`);
-
-    const availabilityState = JSON.parse(
-      localStorage.getItem(`${AVAILABILITYSTATE}${eventId}`) as string
-    ) as DefaultDateTimeObjectType;
-
     const editRespondentIdAvailability: undefined | boolean[][] = useTableValue;
 
-    // // Only if writeModeType = `edit`
-    // if (writeModeTypeRef.current == "edit") {
-    //   console.log(editRespondentId);
-    //   console.log(availabilityState);
-    //   availabilityState?.respondentAvailability
-    //     .filter((respondent) => respondent.id == editRespondentId)[0]
-    //     .availability.splice(0, useTableValue.length, ...useTableValue);
-
-    //   console.log(useTableValue);
-    //   console.log(availabilityState);
-
-    //   editRespondentIdAvailability =
-    //     availabilityState?.respondentAvailability.filter(
-    //       (respondent) => respondent.id == editRespondentId
-    //     )[0].availability;
-    // }
-
-    // console.log(useTableValue);
-    localStorage.setItem(
-      `${EDITUSERAVAILABILITY}${eventId}`,
-      JSON.stringify(editRespondentIdAvailability)
-    );
-    console.log(`after set item`);
+    if (writeModeTypeRef.current == "edit") {
+      localStorage.setItem(
+        `${EDITUSERAVAILABILITY}${eventId}`,
+        JSON.stringify(editRespondentIdAvailability)
+      );
+    } else if (writeModeTypeRef.current == "add") {
+      localStorage.setItem(
+        `${ADDUSERAVAILABILITY}${eventId}`,
+        JSON.stringify(editRespondentIdAvailability)
+      );
+    }
 
     return (
       <>

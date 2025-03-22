@@ -121,3 +121,9 @@ export type PatchSingleEventResponseType = {
   previous_event_name?: string;
   new_event_name?: string;
 };
+
+export type patchEventRespondentAvailabilityType = {
+  respondent_id: string;
+  existing_availabilities: EventTimeUTC[];
+  new_availabilities: EventTimeUTC[];
+};

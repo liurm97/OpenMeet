@@ -1,4 +1,4 @@
-from ...models import Event, Date, Day, Respondent, Availability
+from ...models import Event, Date, Respondent, Availability
 
 from typing import Any
 from django.core.management.base import BaseCommand

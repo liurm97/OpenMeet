@@ -27,7 +27,7 @@ const AvailabilityGrid = ({
   mode: string;
   setMode: React.Dispatch<string>;
   writeModeTypeRef: React.MutableRefObject<string | undefined>;
-  previousArrayRef: React.MutableRefObject<boolean[][]>;
+  previousArrayRef: React.MutableRefObject<boolean[][] | undefined>;
   editRespondentNameRef: React.MutableRefObject<string | undefined>;
 }) => {
   console.log(previousArrayRef.current);

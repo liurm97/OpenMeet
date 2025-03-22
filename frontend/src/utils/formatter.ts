@@ -9,6 +9,7 @@ import { SHORTENED_DAY_OF_WEEK } from "./globals";
 import {
   EventDate,
   EventDay,
+  EventTimeUTC,
   GetSingleEventResponseDataTypeLocalFormatted,
 } from "@/types/type";
 
@@ -184,7 +185,7 @@ export const formatAvailabilityBooleanToString = (
   type: number,
   inputArray: boolean[][],
   localDateTimeArray: string[][]
-): string[] => {
+): EventTimeUTC[] => {
   /*
   @inputArray: boolean input array to format
   @localDateTimeArray: datetime array in local timezone to be used to map
@@ -192,7 +193,7 @@ export const formatAvailabilityBooleanToString = (
   Formats boolean input array to string[][] and return UTC datetime/daytime string array
   */
   const outputArrayLocal: string[] = [];
-  const outputArrayUTC: string[] = [];
+  const outputArrayUTC: EventTimeUTC[] = [];
 
   for (let i = 0; i < inputArray.length; ++i) {
     for (let j = 0; j < inputArray[i].length; ++j) {
@@ -204,11 +205,13 @@ export const formatAvailabilityBooleanToString = (
     outputArrayLocal.forEach((localDateTime) => {
       const format = `YYYY-MM-DD HH:mm`;
       const raw_d = new Date(localDateTime).toISOString();
-      outputArrayUTC.push(dayjs(new Date(raw_d)).utc().format(format));
+      outputArrayUTC.push({
+        time_utc: dayjs(new Date(raw_d)).utc().format(format),
+      });
     });
   } else {
     outputArrayLocal.forEach((localDayTime) =>
-      outputArrayUTC.push(formatDayTimeStringLocal(localDayTime))
+      outputArrayUTC.push({ time_utc: formatDayTimeStringLocal(localDayTime) })
     );
   }
   return outputArrayUTC;

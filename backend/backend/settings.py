@@ -50,19 +50,7 @@ INSTALLED_APPS = [
     "rest_framework.authtoken",
     "corsheaders",
     "django_seed",
-    # Google authentication service
-    # "dj_rest_auth",
-    # "django.contrib.sites",
-    # "allauth",
-    # "allauth.account",
-    # "allauth.socialaccount",
-    # "allauth.socialaccount.providers.google",
-    # "dj_rest_auth.registration",
 ]
-
-# SOCIALACCOUNTPROVIDER = {
-#     "google": {"SCOPE": ["profile", "email"], "AUTH_PARAMS": {"access_type": "online"}}
-# }
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
@@ -140,23 +128,9 @@ USE_I18N = True
 USE_TZ = True
 
 
-# Static files (CSS, JavaScript, Images)
-# https://docs.djangoproject.com/en/5.1/howto/static-files/
-
 STATIC_URL = "static/"
-
-# Default primary key field type
-# https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 CORS_ALLOW_ALL_ORIGINS = True
 CORS_ALLOWS_CREDENTIALS = True
-
-# AUTHENTICATION_BACKENDS = (
-#     "django.contrib.auth.backends.ModelBackend",
-#     "allauth.accounts.auth_backends.AuthenticationBackend",
-# )
-
-# LOGIN_REDIRECT_URL = "http://localhost:5173/"
-# LOGOUT_REDIRECT_URL = "http://localhost:5173/"

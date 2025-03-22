@@ -48,19 +48,19 @@ class AvailabilityModelTests(TestCase):
 
         valid_create_availability_payloads = [
             {
-                "time": "2020-01-28 09:00",
+                "time_utc": "2020-01-28 09:00",
                 "respondentAvailability": created_respondent,
             },
             {
-                "time": "Monday 09:00",
+                "time_utc": "Monday 09:00",
                 "respondentAvailability": created_respondent,
             },
             {
-                "time": "Tuesday 09:00",
+                "time_utc": "Tuesday 09:00",
                 "respondentAvailability": created_respondent,
             },
             {
-                "time": "Sunday 09:00",
+                "time_utc": "Sunday 09:00",
                 "respondentAvailability": created_respondent,
             },
         ]
@@ -89,10 +89,10 @@ class AvailabilityModelTests(TestCase):
             - Creating new availability resource raises ValidationError
         """
         invalid_availability_times = [
-            {"time": "09:01"},
-            {"time": "09:11"},
-            {"time": "9:01"},
-            {"time": "09:001"},
+            {"time_utc": "09:01"},
+            {"time_utc": "09:11"},
+            {"time_utc": "9:01"},
+            {"time_utc": "09:001"},
         ]
         validation_error_counter = 0
         for time in invalid_availability_times:

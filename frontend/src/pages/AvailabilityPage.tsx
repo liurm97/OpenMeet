@@ -16,8 +16,6 @@ const AvailabilityPage = () => {
   const eventData = useLoaderData();
   const { eventId } = useParams();
 
-  console.log(eventId);
-
   // make a deep copy of eventData and format event_availabilities array: time_utc -> time_local
   const formattedEventData = JSON.parse(JSON.stringify(eventData));
 
@@ -26,7 +24,7 @@ const AvailabilityPage = () => {
     if (isSignedIn)
       localStorage.setItem(`${USERID}${eventId}`, auth.userId as string);
     // Else clear userId in localStorage
-    else localStorage.removeItem(USERID);
+    else localStorage.removeItem(`${USERID}${eventId}`);
 
     // cache formattedEvent in localStorage
     localStorage.setItem(

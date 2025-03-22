@@ -16,6 +16,11 @@ urlpatterns = [
         views_event.SpecificEventView.as_view(),
         name="specific-event-by-eventid",
     ),
+    path(
+        "v1/events/<str:event_id>/availabilities",
+        views_availability.AddEventAvailabilityView.as_view(),
+        name="specific-event-availabilities-by-eventid",
+    ),
     # path("events", views.get_all_or_create_event, name="get-all-or-create-event"),
     # path("events/<str:event_id>", views.get_event_by_pk, name="get-event-by-pk"),
     # path(

@@ -1,14 +1,11 @@
 """
-Test Events APIs
+Test events APIs
 """
 
-from django.test import TestCase, SimpleTestCase
-from rest_framework.test import RequestsClient, APITestCase
+from rest_framework.test import APITestCase
 from django.core.management import call_command
-from rest_framework import status
 from uuid import uuid4
 
-from ...scripts.orm_script import seed_db_dates
 from ...models import Event
 
 
@@ -18,12 +15,6 @@ class EventsAPITests(APITestCase):
     """
 
     BASE_URL = "http://127.0.0.1:8000/api/v1/events"
-
-    def setUp(self) -> None:
-        seed_db_dates()
-
-    def tearDown(self) -> None:
-        Event.objects.all().delete()
 
     def test_create_event_resource_success_with_owner_returns_201(self):
         """
@@ -207,6 +198,7 @@ class EventsAPITests(APITestCase):
             - Make a GET /api/v1/events/<event_id>
             - Pass if response status code = 200
         """
+        call_command("seed_db_dates")
         valid_event_id = Event.objects.all().first().id
         headers = {"Authorization": "1bc84a76-57f0-4678-82a0-9092c2edf8c5"}
 

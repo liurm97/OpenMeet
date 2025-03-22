@@ -5,7 +5,9 @@
 import {
   CreateEventRequestPayloadType,
   CreateEventResponseDataType,
+  EventTimeUTC,
   GetSingleEventResponseDataTypeUTC,
+  patchEventRespondentAvailabilityType,
   PatchSingleEventResponseType,
 } from "@/types/type";
 
@@ -99,14 +101,14 @@ export const patchSingleEvent = async (
   };
 };
 
-export const patchRespondentAvailabilityInEvent = async (
+export const patchEventRespondentAvailability = async (
   eventId: string,
   field: string,
   respondentId: string,
-  respondentArray: string[]
+  respondentArray: EventTimeUTC[]
 ): Promise<{
   status: number;
-  data: PatchSingleEventResponseType;
+  data: patchEventRespondentAvailabilityType;
 }> => {
   const result = await fetch(`${BASE_REMOTE_URL}/events/${eventId as string}`, {
     method: "PATCH",
@@ -123,9 +125,56 @@ export const patchRespondentAvailabilityInEvent = async (
   });
 
   const status = result.status;
-  const resp = await result.json();
-  return {
-    status: status,
-    data: resp,
-  };
+
+  if (status == 200) {
+    const resp = await result.json();
+    return {
+      status: status,
+      data: resp,
+    };
+  } else {
+    throw new Error(
+      `Something went wrong while updating availability in event ${eventId}`
+    );
+  }
+};
+export const addEventRespondentAvailability = async (
+  eventId: string,
+  respondentName: string,
+  respondentArray: EventTimeUTC[],
+  isGuestRespondent: boolean
+): Promise<{
+  status: number;
+  data: patchEventRespondentAvailabilityType;
+}> => {
+  const result = await fetch(
+    `${BASE_REMOTE_URL}/events/${eventId as string}/availabilities`,
+    {
+      method: "POST",
+      headers: {
+        Accept: "application/json",
+        "Content-Type": "application/json",
+        Authorization: PRIVATE_API_TOKEN,
+      },
+      body: JSON.stringify({
+        respondentName: respondentName,
+        respondentArray: respondentArray,
+        isGuestRespondent: isGuestRespondent,
+      }),
+    }
+  );
+
+  const status = result.status;
+
+  if (status == 201) {
+    const resp = await result.json();
+    return {
+      status: status,
+      data: resp,
+    };
+  } else {
+    throw new Error(
+      `Something went wrong while adding availability in event ${eventId}`
+    );
+  }
 };

@@ -11,16 +11,62 @@ import { Input } from "@/components/ui/input";
 import { useState } from "react";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
+import { ADDUSERAVAILABILITY, AVAILABILITYSTATE } from "@/utils/constants";
+import { EventTimeUTC } from "@/types/type";
+import { formatAvailabilityBooleanToString } from "@/utils/formatter";
+import { addEventRespondentAvailability } from "@/services/api/api";
+import { useAuth } from "@clerk/clerk-react";
 
-const SaveDialog = ({ eventId }: { eventId: string }) => {
+const SaveDialog = ({ eventId, type }: { eventId: string; type: number }) => {
+  // useStates
   const [isLoading, setIsLoading] = useState<boolean>(false);
+  const auth = useAuth();
   const [text, setText] = useState<string>("");
   const navigate = useNavigate();
 
-  const handleSave = async (text: string, eventId: string) => {
+  const handleAddRespondentAvailbility = async (
+    eventId: string,
+    respondentName: string,
+    respondentArray: boolean[][]
+  ) => {
     try {
-      console.log("saving!");
-      // navigate(0);
+      if (respondentName.length < 1) {
+        throw new Error("Respondent name cannot be empty!");
+      }
+
+      setIsLoading(true);
+      console.log(eventId);
+      console.log(respondentName);
+      console.log(respondentArray);
+      const availabilityState = JSON.parse(
+        localStorage.getItem(`${AVAILABILITYSTATE}${eventId}`) as string
+      );
+      const formattedRespondentStringArray: EventTimeUTC[] =
+        formatAvailabilityBooleanToString(
+          type,
+          respondentArray,
+          availabilityState?.availability as string[][]
+        );
+
+      console.log(formattedRespondentStringArray);
+      if (auth.isSignedIn) {
+        await addEventRespondentAvailability(
+          eventId,
+          respondentName,
+          formattedRespondentStringArray,
+          false
+        );
+      } else {
+        await addEventRespondentAvailability(
+          eventId,
+          respondentName,
+          formattedRespondentStringArray,
+          true
+        );
+      }
+      localStorage.clear();
+
+      navigate(0);
     } catch (e) {
       if (e instanceof Error) {
         toast(e.message);
@@ -53,7 +99,19 @@ const SaveDialog = ({ eventId }: { eventId: string }) => {
             </Button>
           ) : (
             <Button
-              onClick={() => handleSave(text, eventId)}
+              onClick={() => {
+                const respondentName = text;
+                const respondentArray = JSON.parse(
+                  localStorage.getItem(
+                    `${ADDUSERAVAILABILITY}${eventId}`
+                  ) as string
+                );
+                handleAddRespondentAvailbility(
+                  eventId,
+                  respondentName,
+                  respondentArray
+                );
+              }}
               className="bg-black"
             >
               Submit

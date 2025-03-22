@@ -169,15 +169,14 @@ class UpdateSpecificEventRequestSerializer(serializers.Serializer):
 
     event_id = serializers.UUIDField(required=True)
     field = serializers.CharField(required=True)
-    text = serializers.CharField(required=True)
 
     class Meta:
-        fields = ["event_id", "field", "text"]
+        fields = ["event_id", "field"]
 
     def validate_field(self, data):
-        if data not in ["agenda", "name"]:
+        if data not in ["agenda", "name", "respondentAvailability"]:
             raise ValidationError(
-                f"You have provided invalid field - ({data}). Acceptable fields are ['agenda', 'name']"
+                f"You have provided invalid field - ({data}). Acceptable fields are ['agenda', 'name', 'respondentAvailability']"
             )
         return data
 

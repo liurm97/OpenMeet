@@ -1,8 +1,9 @@
-import { CheckCheck, Plus } from "lucide-react";
+import { CheckCheck, Loader2, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Copy } from "lucide-react";
 import {
   DefaultDateTimeObjectType,
+  EventTimeUTC,
   GetSingleEventResponseDataTypeLocalFormatted,
 } from "@/types/type";
 import { useRef, useState } from "react";
@@ -21,7 +22,7 @@ import {
   EDITUSER,
   EDITUSERAVAILABILITY,
 } from "@/utils/constants";
-import { patchRespondentAvailabilityInEvent } from "@/services/api/api";
+import { patchEventRespondentAvailability } from "@/services/api/api";
 import { useNavigate } from "react-router-dom";
 
 const AvailabilityBody = ({
@@ -35,7 +36,7 @@ const AvailabilityBody = ({
   const eventAgenda = eventData?.agenda as string;
   const eventName = eventData?.name as string;
   const dateRange = formatDateRange(type, eventData);
-  let availabilityState: DefaultDateTimeObjectType = JSON.parse(
+  let availabilityState: DefaultDateTimeObjectType | null = JSON.parse(
     localStorage.getItem(`${AVAILABILITYSTATE}${eventId}`) as string
   );
 
@@ -44,7 +45,6 @@ const AvailabilityBody = ({
   const [, setName] = useState<string>(eventName);
   const [mode, setMode] = useState<string>("read");
   const navigate = useNavigate();
-  // const [isLoading, setIsLoading] = useState<boolean>(false);
 
   // Cache writeAvailabilityState & readAvailabilityState in localStorage to prevent time-consuming processing
   if (availabilityState == null) {
@@ -58,8 +58,6 @@ const AvailabilityBody = ({
     );
   }
 
-  // if availabilityState is not NULL then override existing
-
   // useRefs
   const writeModeTypeRef: React.MutableRefObject<undefined | string> =
     useRef(undefined);
@@ -67,21 +65,22 @@ const AvailabilityBody = ({
   const editRespondentNameRef: React.MutableRefObject<undefined | string> =
     useRef(undefined);
 
-  const previousArrayRef: React.MutableRefObject<boolean[][]> = useRef(
-    availabilityState.readShape
-  );
+  const previousArrayRef: React.MutableRefObject<boolean[][] | undefined> =
+    useRef(availabilityState?.readShape);
 
   /* Build time array and to pass to Availability component to render start time local and end time local */
-  const timeArray = availabilityState.availability[0].map((_datetime, _ind) => {
-    // Split datetime and get the time value. i.e -> 10:00, 11:00, 12:00
-    const splitted = _datetime.split(" ");
-    const time = splitted[splitted.length - 1];
+  const timeArray = availabilityState?.availability[0].map(
+    (_datetime, _ind) => {
+      // Split datetime and get the time value. i.e -> 10:00, 11:00, 12:00
+      const splitted = _datetime.split(" ");
+      const time = splitted[splitted.length - 1];
 
-    // Push time ending with `00` to timeArray. i.e -> 10:00, 11:00, 12:00
-    if (_ind % 2 == 0) {
-      return time;
+      // Push time ending with `00` to timeArray. i.e -> 10:00, 11:00, 12:00
+      if (_ind % 2 == 0) {
+        return time;
+      }
     }
-  }) as string[];
+  ) as string[];
 
   // Handler functions
 
@@ -90,32 +89,23 @@ const AvailabilityBody = ({
     respondentId: string,
     respondentArray: boolean[][]
   ) => {
-    console.log(eventId);
-    console.log(respondentId);
-    console.log(respondentArray);
-
     try {
-      // setIsLoading(true);
-      const formattedRespondentStringArray: string[] =
+      const formattedRespondentStringArray: EventTimeUTC[] =
         formatAvailabilityBooleanToString(
           type,
           respondentArray,
-          availabilityState.availability
+          availabilityState?.availability as string[][]
         );
-      const response = await patchRespondentAvailabilityInEvent(
+      await patchEventRespondentAvailability(
         eventId,
         "respondentAvailability",
         respondentId,
         formattedRespondentStringArray
       );
+      localStorage.clear();
       navigate(0);
-
-      // throw error if not OK
-    } catch (error) {
-      // catch error here if not OK
-      console.log(error);
-    } finally {
-      // setIsLoading(false);
+    } catch (e) {
+      if (e instanceof Error) toast(e.message);
     }
   };
 
@@ -204,7 +194,7 @@ const AvailabilityBody = ({
                     <Button
                       className="bg-white border-red-500 border text-red-500 hover:bg-red-100 flex flex-row"
                       onClick={() => {
-                        previousArrayRef.current = availabilityState.readShape;
+                        previousArrayRef.current = availabilityState?.readShape;
                         setMode("read");
                         writeModeTypeRef.current = undefined;
                         editRespondentNameRef.current = undefined;
@@ -219,7 +209,7 @@ const AvailabilityBody = ({
                     {/* Else if write mode is edit then renders <Button/> component */}
                     {writeModeTypeRef.current == "add" ? (
                       // Add
-                      <SaveDialog eventId={eventId} />
+                      <SaveDialog eventId={eventId} type={type} />
                     ) : (
                       // Edit
                       <Button
@@ -246,6 +236,8 @@ const AvailabilityBody = ({
                   </div>
                 )}
             </div>
+
+            {/* Display respondent name while editing availability */}
             {mode == "write" && writeModeTypeRef.current == "edit" && (
               <p className="italic text-sm">
                 Editing {editRespondentNameRef.current}'s availabilities
@@ -256,7 +248,7 @@ const AvailabilityBody = ({
 
         {/* Availability Grid + Response section */}
         <AvailabilityGrid
-          availabilityState={availabilityState}
+          availabilityState={availabilityState as DefaultDateTimeObjectType}
           eventData={eventData as GetSingleEventResponseDataTypeLocalFormatted}
           timeArray={timeArray}
           mode={mode}
@@ -271,8 +263,3 @@ const AvailabilityBody = ({
 };
 
 export default AvailabilityBody;
-
-/*
-
-
-*/

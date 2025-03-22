@@ -291,17 +291,27 @@ class SpecificEventView(APIView):
             )
 
     def patch(self, request, event_id):
-        text = request.data.get("text")
+
+        # get fields in data payload
+
+        # required fields
         field = request.data.get("field")
 
+        # optional fields depending on the field that is being updated
+        text = request.data.get("text") or None
+        respondent_id = request.data.get("respondentId") or None
+        respondent_array = request.data.get("respondentArray") or None
+
+        # Validate if auth token exists in header
         if validate_auth_token(request) == False:
             return Response(
                 "Please provide a valid token", status=status.HTTP_401_UNAUTHORIZED
             )
 
         else:
+            # Validate if the required fields are provided
             request_serializer = UpdateSpecificEventRequestSerializer(
-                data={"event_id": event_id, "field": field, "text": text}
+                data={"event_id": event_id, "field": field}
             )
 
             if request_serializer.is_valid():
@@ -329,12 +339,55 @@ class SpecificEventView(APIView):
                             "previous_event_name": existing_name_val,
                             "new_event_name": Event.objects.get(id=event_id).name,
                         }
+                    elif field == "respondentAvailability":
+
+                        # delete all respondent's availabilities
+                        Availability.objects.filter(
+                            respondentAvailability__id=respondent_id
+                        ).delete()
+
+                        # iterate through new availabilities and insert into Availabilities table
+
+                        target_respondent = Respondent.objects.get(id=respondent_id)
+                        if respondent_array is not None:
+                            bulk_create_availability_list = []
+                            for i in respondent_array:
+                                random_availability_id = uuid4()
+                                availability_payload = Availability(
+                                    id=random_availability_id,
+                                    time_utc=i.get("time_utc"),
+                                    respondentAvailability=target_respondent,
+                                )
+                                bulk_create_availability_list.append(
+                                    availability_payload
+                                )
+                            Availability.objects.bulk_create(
+                                bulk_create_availability_list
+                            )
+                            new_availabilities = Availability.objects.filter(
+                                respondentAvailability__id=respondent_id
+                            ).values("time_utc")
+
+                            updated_event_obj = {
+                                "respondent_id": target_respondent.id,
+                                "new_availabilities": new_availabilities,
+                            }
+                            return Response(
+                                updated_event_obj, status=status.HTTP_200_OK
+                            )
+
+                        # If respondent array is empty or None
+                        else:
+                            updated_event_obj = {
+                                "respondent_id": target_respondent.id,
+                                "new_availabilities": [],
+                            }
                     return Response(updated_event_obj, status=status.HTTP_200_OK)
 
                 except Exception as e:
                     return Response(
-                        f"The ({event_id}) you provided may not exist. Please try again.",
-                        status=status.HTTP_200_OK,
+                        f"The event_id ({event_id}) you provided may not exist. Please try again.",
+                        status=status.HTTP_400_BAD_REQUEST,
                     )
 
             else:
