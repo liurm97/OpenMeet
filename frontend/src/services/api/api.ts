@@ -11,10 +11,9 @@ import {
   patchEventRespondentAvailabilityType,
   PatchSingleEventResponseType,
 } from "@/types/type";
-import { data } from "react-router-dom";
 
 // API token
-export const PRIVATE_API_TOKEN = "1bc84a76-57f0-4678-82a0-9092c2edf8c5";
+export const PRIVATE_API_TOKEN = import.meta.env.VITE_PRIVATE_API_TOKEN;
 
 export const BASE_REMOTE_URL = "http://127.0.0.1:8000/api/v1";
 

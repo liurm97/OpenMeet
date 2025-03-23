@@ -11,7 +11,7 @@ import {
 } from "@/types/type";
 import { EDITUSER } from "@/utils/constants";
 import { useAuth } from "@clerk/clerk-react";
-import { Pencil, Trash2, Trash } from "lucide-react";
+import { Pencil } from "lucide-react";
 import React, { useState } from "react";
 
 const AvailabilityGrid = ({

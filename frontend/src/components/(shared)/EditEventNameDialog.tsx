@@ -71,7 +71,7 @@ const EditEventNameDialog = ({
   return (
     <Dialog>
       <DialogTrigger disabled={allowedToEditEventname ? false : true} asChild>
-        <button>
+        <div>
           {allowedToEditEventname ? (
             <TooltipProvider>
               <Tooltip>
@@ -104,7 +104,7 @@ const EditEventNameDialog = ({
               </Tooltip>
             </TooltipProvider>
           )}
-        </button>
+        </div>
       </DialogTrigger>
       <DialogContent>
         <DialogHeader className="flex flex-row justify-center gap-4 items-center"></DialogHeader>
