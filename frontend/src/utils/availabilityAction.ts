@@ -174,7 +174,6 @@ export const buildDefaultAvailabilityDateTimeObject = (
 
 */
   {
-    console.log("executed");
     let eventDates: EventDate[] | undefined, eventDays: EventDay[] | undefined;
 
     let readDateTimeShape: boolean[][] = [];
@@ -290,8 +289,6 @@ export const buildDefaultAvailabilityDateTimeObject = (
         const respondentId = respondent.respondentId;
         const respondentName = respondent.respondentName;
         const respondentAvailabilities = respondent.respondentAvailability;
-
-        // console.log(respondentAvailabilities);
 
         for (let i = 0; i < dateTimeArray.length; ++i) {
           for (let j = 0; j < dateTimeArray[i].length; ++j) {

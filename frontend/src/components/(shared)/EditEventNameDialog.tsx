@@ -5,27 +5,52 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { Loader2, Pencil } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
 import { useRef, useState } from "react";
 import { toast } from "sonner";
 import { updateSingleEventAgenda } from "@/utils/routeAction";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "@clerk/clerk-react";
 
 const EditEventNameDialog = ({
+  owner,
   eventName,
   eventId,
   setName,
 }: {
+  owner: string;
   eventName: string;
   eventId: string;
   setName: React.Dispatch<string>;
 }) => {
-  const textRef = useRef<string>(eventName);
+  // States
   const [isLoading, setIsLoading] = useState<boolean>(false);
+
+  // Hooks
+  const auth = useAuth();
   const navigate = useNavigate();
+
+  // Variables
+
+  const allowedToEditEventname =
+    owner === "-1"
+      ? true
+      : auth.isSignedIn && `${auth.userId}:${eventId}` == owner
+      ? true
+      : false;
+
+  // Refs
+  const textRef = useRef<string>(eventName);
+
+  // Handler functions
   const handleUpdateEventName = async (text: string, eventId: string) => {
     try {
       setIsLoading(true);
@@ -45,10 +70,40 @@ const EditEventNameDialog = ({
   };
   return (
     <Dialog>
-      <DialogTrigger asChild>
+      <DialogTrigger disabled={allowedToEditEventname ? false : true} asChild>
         <button>
-          <Pencil size={16} />
-          {/* <span>Agenda</span> */}
+          {allowedToEditEventname ? (
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger>
+                  {" "}
+                  <Pencil size={16} />
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>Edit event name</p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+          ) : (
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger>
+                  {" "}
+                  <Pencil
+                    size={16}
+                    className={`${
+                      allowedToEditEventname
+                        ? undefined
+                        : "cursor-not-allowed disabled text-gray-400"
+                    }`}
+                  />
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>You must be owner of the event to edit event name</p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+          )}
         </button>
       </DialogTrigger>
       <DialogContent>

@@ -63,9 +63,7 @@ const WriteAvailabilityTable = forwardRef<HTMLTableElement, Props>(
               <tr
                 key={rowIndex}
                 className={`flex flex-col grow`}
-                onClick={() => {
-                  console.log("clicked");
-                }}
+                onClick={() => {}}
               >
                 {row.map((_, columnIndex) => (
                   <td

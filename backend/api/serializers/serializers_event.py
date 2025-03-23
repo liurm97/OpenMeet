@@ -128,7 +128,6 @@ class CreateEventSerializer(serializers.ModelSerializer):
         """
         If request payload is validated, create Event resource
         """
-        print(f"CreateEventSerializer:: validated_data:: {validated_data}")
         # if owner is passed in:
         if "owner" in validated_data.keys():
             owner = validated_data["owner"]

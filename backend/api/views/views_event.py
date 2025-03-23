@@ -76,7 +76,6 @@ class CreateEventView(APIView):
                         dateSerializer.context["created_event"] = created_event
 
                         if dateSerializer.is_valid():
-                            print("dateSerializer is valid")
                             dateSerializer.save()
 
                             return Response(

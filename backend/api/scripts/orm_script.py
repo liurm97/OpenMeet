@@ -81,8 +81,6 @@ def seed_db_dates() -> None:
             availability_bulk_create_list.append(Availability(**availability_object))
         Availability.objects.bulk_create(availability_bulk_create_list)
 
-    print("Seeding done! Ready for test!!!")
-
 
 def seed_db_days() -> None:
 
@@ -163,5 +161,3 @@ def seed_db_days() -> None:
             availability_object["id"] = availability_unique_id
             availability_bulk_create_list.append(Availability(**availability_object))
         Availability.objects.bulk_create(availability_bulk_create_list)
-
-    print("Seeding done! Ready for test!!!")

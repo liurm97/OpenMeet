@@ -14,57 +14,58 @@ class Command(BaseCommand):
         - Availability
     """
 
-    event_payload = {
-        "name": "seed_db:: valid without owner 1",
-        "owner": "0344802b-227c-4be4-bf9f-d2deb3a5d82e",
-        "type": 2,
-        "start_time_utc": "09:00",
-        "end_time_utc": "11:00",
-        "eventDays": [{"day": "Monday"}, {"day": "Wednesday"}],
-    }
-
-    respondent_payload = [
-        {
-            "name": "Max Martin",
-            "isGuestRespondent": True,
-            "respondentAvailabilities": [
-                {
-                    "time_utc": "Monday 09:00",
-                },
-                {
-                    "time_utc": "Monday 10:00",
-                },
-                {
-                    "time_utc": "Monday 10:30",
-                },
-            ],
-        },
-        {
-            "name": "Max Fury",
-            "isGuestRespondent": True,
-            "respondentAvailabilities": [
-                {
-                    "time_utc": "Monday 09:00",
-                },
-                {
-                    "time_utc": "Wednesday 09:00",
-                },
-                {
-                    "time_utc": "Wednesday 10:00",
-                },
-                {
-                    "time_utc": "Wednesday 10:30",
-                },
-            ],
-        },
-    ]
-
     def handle(self, *args: Any, **options: Any) -> str | None:
-        day_objects: list[object] = self.event_payload["eventDays"]
-        self.event_payload.pop("eventDays")
+
+        respondent_payload = [
+            {
+                "name": "Max Martin",
+                "isGuestRespondent": True,
+                "respondentAvailabilities": [
+                    {
+                        "time_utc": "Monday 09:00",
+                    },
+                    {
+                        "time_utc": "Monday 10:00",
+                    },
+                    {
+                        "time_utc": "Monday 10:30",
+                    },
+                ],
+            },
+            {
+                "name": "Max Fury",
+                "isGuestRespondent": True,
+                "respondentAvailabilities": [
+                    {
+                        "time_utc": "Monday 09:00",
+                    },
+                    {
+                        "time_utc": "Wednesday 09:00",
+                    },
+                    {
+                        "time_utc": "Wednesday 10:00",
+                    },
+                    {
+                        "time_utc": "Wednesday 10:30",
+                    },
+                ],
+            },
+        ]
+
+        event_payload = {
+            "name": "seed_db:: valid without owner 1",
+            "owner": "0344802b-227c-4be4-bf9f-d2deb3a5d82e",
+            "type": 2,
+            "start_time_utc": "09:00",
+            "end_time_utc": "11:00",
+            "eventDays": [{"day": "Monday"}, {"day": "Wednesday"}],
+        }
+
+        day_objects: list[object] = event_payload.pop("eventDays")
+        # self.event_payload.pop("eventDays")
 
         # 1. create Event
-        created_event = Event.objects.create(**self.event_payload)
+        created_event = Event.objects.create(**event_payload)
 
         # 2. create Dates related to an event
         day_bulk_create_list = []
@@ -78,7 +79,7 @@ class Command(BaseCommand):
         Day.objects.bulk_create(day_bulk_create_list)
 
         # 3. create Respondents related to an event
-        for respondent in self.respondent_payload:
+        for respondent in respondent_payload:
 
             respondent_unique_id = str(uuid4())
             respondent["id"] = respondent_unique_id
@@ -97,5 +98,3 @@ class Command(BaseCommand):
                     Availability(**availability_object)
                 )
             Availability.objects.bulk_create(availability_bulk_create_list)
-
-        print("Seeding done! Ready for test!!!")

@@ -1,8 +1,6 @@
 import { useUser } from "@clerk/react-router";
 import Logo from "@/components/(shared)/Logo";
-import GiveFeedback from "@/components/(authenticated)/(header)/GiveFeedback";
 import TreatCoffee from "@/components/(authenticated)/(header)/TreatCoffee";
-import AddNewEventButton from "@/components/(shared)/AddNewEventButton";
 import Avatar from "@/components/(authenticated)/(header)/Avatar";
 import HowItWorksLink from "@/components/(unauthenticated)/(header)/HowItWorksLink";
 import FAQLink from "@/components/(unauthenticated)/(header)/FAQLink";
@@ -29,9 +27,7 @@ const Header = ({
       <div className="container mx-auto px-4 h-16 flex items-center justify-between [@media(max-width:400px)]:flex-col [@media(max-width:400px)]:items-center">
         <Logo isSignedIn={isSignedIn} />
         <nav className="flex items-center justify-center gap-4 [@media(max-width:400px)]:gap-3">
-          <GiveFeedback />
           <TreatCoffee />
-          <AddNewEventButton />
 
           {/* If user arrives on Event AvailabilityPage and is signed in */}
           {isSignedIn && <Avatar />}

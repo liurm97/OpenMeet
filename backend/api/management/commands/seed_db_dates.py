@@ -14,60 +14,61 @@ class Command(BaseCommand):
         - Availability
     """
 
-    event_payload = {
-        "name": "seed_db:: valid without owner 1",
-        "owner": "0344802b-227c-4be4-bf9f-d2deb3a5d82e",
-        "type": 1,
-        "start_time_utc": "09:00",
-        "end_time_utc": "11:00",
-        "eventDates": [{"date": "2020-01-28"}, {"date": "2020-01-02"}],
-    }
-
-    respondent_payload = [
-        {
-            "name": "Max Martin",
-            "isGuestRespondent": True,
-            "respondentAvailabilities": [
-                {
-                    "time_utc": "2020-01-02 09:00",
-                },
-                {
-                    "time_utc": "2020-01-02 10:00",
-                },
-                {
-                    "time_utc": "2020-01-02 10:30",
-                },
-                {
-                    "time_utc": "2020-01-28 09:00",
-                },
-            ],
-        },
-        {
-            "name": "Max Fury",
-            "isGuestRespondent": True,
-            "respondentAvailabilities": [
-                {
-                    "time_utc": "2020-01-28 09:00",
-                },
-                {
-                    "time_utc": "2020-01-28 10:00",
-                },
-                {
-                    "time_utc": "2020-01-28 10:30",
-                },
-                {
-                    "time_utc": "2020-01-02 10:00",
-                },
-            ],
-        },
-    ]
-
     def handle(self, *args: Any, **options: Any) -> str | None:
-        date_objects: list[object] = self.event_payload["eventDates"]
-        self.event_payload.pop("eventDates")
+
+        event_payload = {
+            "name": "seed_db:: valid without owner 1",
+            "owner": "0344802b-227c-4be4-bf9f-d2deb3a5d82e",
+            "type": 1,
+            "start_time_utc": "09:00",
+            "end_time_utc": "11:00",
+            "eventDates": [{"date": "2020-01-28"}, {"date": "2020-01-02"}],
+        }
+
+        respondent_payload = [
+            {
+                "name": "Max Martin",
+                "isGuestRespondent": True,
+                "respondentAvailabilities": [
+                    {
+                        "time_utc": "2020-01-02 09:00",
+                    },
+                    {
+                        "time_utc": "2020-01-02 10:00",
+                    },
+                    {
+                        "time_utc": "2020-01-02 10:30",
+                    },
+                    {
+                        "time_utc": "2020-01-28 09:00",
+                    },
+                ],
+            },
+            {
+                "name": "Max Fury",
+                "isGuestRespondent": True,
+                "respondentAvailabilities": [
+                    {
+                        "time_utc": "2020-01-28 09:00",
+                    },
+                    {
+                        "time_utc": "2020-01-28 10:00",
+                    },
+                    {
+                        "time_utc": "2020-01-28 10:30",
+                    },
+                    {
+                        "time_utc": "2020-01-02 10:00",
+                    },
+                ],
+            },
+        ]
+
+        date_objects: list[object] = event_payload["eventDates"]
+        event_payload.pop("eventDates")
 
         # 1. create Event
-        created_event = Event.objects.create(**self.event_payload)
+        created_event = Event.objects.create(**event_payload)
 
         # 2. create Dates related to an event
         date_bulk_create_list = []
@@ -81,7 +82,7 @@ class Command(BaseCommand):
         Date.objects.bulk_create(date_bulk_create_list)
 
         # 3. create Respondents related to an event
-        for respondent in self.respondent_payload:
+        for respondent in respondent_payload:
 
             respondent_unique_id = str(uuid4())
             respondent["id"] = respondent_unique_id
@@ -100,5 +101,3 @@ class Command(BaseCommand):
                     Availability(**availability_object)
                 )
             Availability.objects.bulk_create(availability_bulk_create_list)
-
-        print("Seeding done! Ready for test!!!")

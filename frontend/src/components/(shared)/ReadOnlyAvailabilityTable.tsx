@@ -50,7 +50,6 @@ const ReadOnlyAvailabilityTable = forwardRef<HTMLTableElement, Props>(
                 key={rowIndex}
                 className={`flex flex-col grow`}
                 onClick={() => {
-                  console.log("clicked");
                   toast(
                     <p>
                       Hello! Click on the{" "}

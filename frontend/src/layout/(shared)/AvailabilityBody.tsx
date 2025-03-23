@@ -1,4 +1,4 @@
-import { CheckCheck, Loader2, Plus } from "lucide-react";
+import { CheckCheck, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Copy } from "lucide-react";
 import {
@@ -13,6 +13,7 @@ import AvailabilityGrid from "@/layout/(shared)/AvailabilityGrid";
 import {
   formatAvailabilityBooleanToString,
   formatDateRange,
+  formatTimeArray,
 } from "@/utils/formatter";
 import AgendaDialog from "@/components/(shared)/AgendaDialog";
 import EditEventNameDialog from "@/components/(shared)/EditEventNameDialog";
@@ -24,6 +25,7 @@ import {
 } from "@/utils/constants";
 import { patchEventRespondentAvailability } from "@/services/api/api";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "@clerk/clerk-react";
 
 const AvailabilityBody = ({
   eventData,
@@ -31,6 +33,7 @@ const AvailabilityBody = ({
   eventData: GetSingleEventResponseDataTypeLocalFormatted | null;
 }) => {
   // Variables
+  const owner = eventData?.owner as string;
   const type = eventData?.type as number;
   const eventId = eventData?.id as string;
   const eventAgenda = eventData?.agenda as string;
@@ -40,11 +43,25 @@ const AvailabilityBody = ({
     localStorage.getItem(`${AVAILABILITYSTATE}${eventId}`) as string
   );
 
-  // useStates
+  // Hooks
+  const navigate = useNavigate();
+  const auth = useAuth();
+
+  // States
   const [agenda, setAgenda] = useState<string>(eventAgenda);
   const [, setName] = useState<string>(eventName);
   const [mode, setMode] = useState<string>("read");
-  const navigate = useNavigate();
+
+  const shouldDisplayAddAvailabilityButton =
+    mode === "read"
+      ? auth.isSignedIn &&
+        eventData!.event_availabilities!.filter(
+          (availability) =>
+            availability.respondent_id == `${auth.userId}:${eventId}`
+        ).length > 0
+        ? false
+        : true
+      : false;
 
   // Cache writeAvailabilityState & readAvailabilityState in localStorage to prevent time-consuming processing
   if (availabilityState == null) {
@@ -58,7 +75,12 @@ const AvailabilityBody = ({
     );
   }
 
-  // useRefs
+  // Variables
+
+  //Build time array and to pass to Availability component to render start time local and end time local
+  const timeArray = formatTimeArray(availabilityState?.availability);
+
+  // Refs
   const writeModeTypeRef: React.MutableRefObject<undefined | string> =
     useRef(undefined);
 
@@ -68,22 +90,7 @@ const AvailabilityBody = ({
   const previousArrayRef: React.MutableRefObject<boolean[][] | undefined> =
     useRef(availabilityState?.readShape);
 
-  /* Build time array and to pass to Availability component to render start time local and end time local */
-  const timeArray = availabilityState?.availability[0].map(
-    (_datetime, _ind) => {
-      // Split datetime and get the time value. i.e -> 10:00, 11:00, 12:00
-      const splitted = _datetime.split(" ");
-      const time = splitted[splitted.length - 1];
-
-      // Push time ending with `00` to timeArray. i.e -> 10:00, 11:00, 12:00
-      if (_ind % 2 == 0) {
-        return time;
-      }
-    }
-  ) as string[];
-
   // Handler functions
-
   const handleEditRespondentAvailabilities = async (
     eventId: string,
     respondentId: string,
@@ -118,7 +125,11 @@ const AvailabilityBody = ({
             {/* Event name */}
             <div className="flex flex-row items-center gap-1">
               <h1 className="text-2xl font-bold mb-1">{eventData?.name} </h1>
+
+              {/* Only signed-in user who is the owner of the event can update event name */}
+
               <EditEventNameDialog
+                owner={owner}
                 eventName={eventName}
                 eventId={eventId}
                 setName={setName}
@@ -173,7 +184,7 @@ const AvailabilityBody = ({
               </Button>
 
               {/* Add Availability*/}
-              {mode == "read" && (
+              {shouldDisplayAddAvailabilityButton && (
                 <Button
                   className="bg-black text-white hover:bg-gray-800 flex flex-row"
                   onClick={() => {
@@ -194,8 +205,12 @@ const AvailabilityBody = ({
                     <Button
                       className="bg-white border-red-500 border text-red-500 hover:bg-red-100 flex flex-row"
                       onClick={() => {
+                        // Revert previousArray to common availability
                         previousArrayRef.current = availabilityState?.readShape;
+
+                        // Toggle to read mode
                         setMode("read");
+                        // Reset writeModeTypeRef and editRespondentNameRef refs
                         writeModeTypeRef.current = undefined;
                         editRespondentNameRef.current = undefined;
                       }}
@@ -237,7 +252,7 @@ const AvailabilityBody = ({
                 )}
             </div>
 
-            {/* Display respondent name while editing availability */}
+            {/* Display respondent name when editing availability */}
             {mode == "write" && writeModeTypeRef.current == "edit" && (
               <p className="italic text-sm">
                 Editing {editRespondentNameRef.current}'s availabilities

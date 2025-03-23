@@ -3,6 +3,7 @@
  */
 
 import {
+  addEventRespondentAvailabilityType,
   CreateEventRequestPayloadType,
   CreateEventResponseDataType,
   EventTimeUTC,
@@ -10,6 +11,7 @@ import {
   patchEventRespondentAvailabilityType,
   PatchSingleEventResponseType,
 } from "@/types/type";
+import { data } from "react-router-dom";
 
 // API token
 export const PRIVATE_API_TOKEN = "1bc84a76-57f0-4678-82a0-9092c2edf8c5";
@@ -42,7 +44,6 @@ export const createEvent = async (
 
     const resp = await result.json();
     const status = result.status;
-    console.log(`createEvent:: status:: ${status} | resp:: ${resp}`);
     return {
       status: status,
       data: resp,
@@ -142,10 +143,11 @@ export const addEventRespondentAvailability = async (
   eventId: string,
   respondentName: string,
   respondentArray: EventTimeUTC[],
-  isGuestRespondent: boolean
+  isGuestRespondent: boolean,
+  signedInUserId?: string
 ): Promise<{
   status: number;
-  data: patchEventRespondentAvailabilityType;
+  data: addEventRespondentAvailabilityType;
 }> => {
   const result = await fetch(
     `${BASE_REMOTE_URL}/events/${eventId as string}/availabilities`,
@@ -160,21 +162,59 @@ export const addEventRespondentAvailability = async (
         respondentName: respondentName,
         respondentArray: respondentArray,
         isGuestRespondent: isGuestRespondent,
+        signedInUserId: signedInUserId,
+      }),
+    }
+  );
+
+  const status = result.status;
+  const resp = await result.json();
+
+  if (status == 201) {
+    return {
+      status: status,
+      data: resp,
+    };
+  } else {
+    // const error = resp.data
+    throw new Error(
+      `Something went wrong while adding availability in event ${eventId}\n
+      Error: ${resp}`
+    );
+  }
+};
+
+export const removeEventRespondentAvailability = async (
+  eventId: string,
+  respondentId: string
+): Promise<{
+  status: number;
+}> => {
+  const result = await fetch(
+    `${BASE_REMOTE_URL}/events/${eventId as string}/availabilities`,
+    {
+      method: "DELETE",
+      headers: {
+        Accept: "application/json",
+        "Content-Type": "application/json",
+        Authorization: PRIVATE_API_TOKEN,
+      },
+      body: JSON.stringify({
+        respondentId: respondentId,
       }),
     }
   );
 
   const status = result.status;
 
-  if (status == 201) {
-    const resp = await result.json();
+  if (status == 204) {
     return {
       status: status,
-      data: resp,
     };
   } else {
+    // const error = resp.data
     throw new Error(
-      `Something went wrong while adding availability in event ${eventId}`
+      `Something went wrong while deleting availability in event ${eventId}. Please try again.`
     );
   }
 };

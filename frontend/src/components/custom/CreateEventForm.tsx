@@ -58,14 +58,13 @@ const formSchema = z.object({
 });
 
 const CreateEventForm = () => {
-  const { isSignedIn } = useAuth();
+  const auth = useAuth();
   const [eventType, setEventType] = useState<EventType>(
     EventType.SPECIFIC_DATES
   );
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const navigate = useNavigate();
 
-  console.log(eventType.toString());
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -82,16 +81,12 @@ const CreateEventForm = () => {
     // set to loading
     setIsLoading(true);
 
-    console.log("submitted");
-
     // format event payload
     let createEventPayload;
     let formattedDates: EventDate[] | undefined;
     let formattedDays: EventDay[] | undefined;
     let owner: string | undefined;
     try {
-      console.log(values);
-
       /* 1. destructure form field values */
       const { eventName, startTime, endTime, eventDateType, eventDates } =
         values;
@@ -100,29 +95,23 @@ const CreateEventForm = () => {
 
       // id value
       const random_event_id = crypto.randomUUID();
-      console.log(`random_event_id:: ${random_event_id}`);
 
       // convert startTime and endTime to UTC
       const startTimeUTC = formatCalendarTimeUTC(startTime);
       const endTimeUTC = formatCalendarTimeUTC(endTime);
 
-      console.log(startTimeUTC);
-      console.log(endTimeUTC);
-
       // owner value
-      if (isSignedIn === false) {
+      if (auth.isSignedIn === false) {
         owner = "-1";
       } else {
-        owner = auth.userId!;
+        owner = `${auth.userId!}:${random_event_id}`;
       }
-      console.log(`owner:: ${owner}`);
 
       // If SPECIFIC_dates: EventDates value
       const dates = eventDates;
       if (eventDateType == 1) {
         formattedDates = dates.map((_date) => {
           const formattedDate = formatCalendarDateUTC(_date as Date, startTime);
-          console.log(formattedDate);
           return {
             date: formattedDate,
           };
@@ -157,23 +146,18 @@ const CreateEventForm = () => {
         };
       }
 
-      console.log(`createEventPayload:: ${JSON.stringify(createEventPayload)}`);
       const createEventResponse = await createEvent(createEventPayload!);
       const { status, data } = createEventResponse;
-      console.log(`status:: ${status}`);
-      console.log(
-        `createEventResponse:: ${JSON.stringify(createEventResponse)}`
-      );
       if (status == 201) {
         const { id }: { id: string } = data;
-        console.log(`id:: ${id}`);
         navigate(`/event/${id}`);
       } else if (status == 500 || status == 400) {
         navigate("/");
       }
-    } catch (error) {
-      console.error("Form submission error", error);
-      toast.error("Failed to submit the form. Please try again.");
+    } catch (e) {
+      if (e instanceof Error) {
+        toast.error("Failed to submit the form. Please try again.");
+      }
     } finally {
       setIsLoading(false);
     }
@@ -267,13 +251,11 @@ const CreateEventForm = () => {
           control={form.control}
           name="eventDateType"
           render={({ field }) => {
-            console.log(`field:: ${JSON.stringify(field)}`);
             return (
               <FormItem>
                 <FormLabel>What dates are you available?</FormLabel>
                 <Select
                   onValueChange={(newVal: string) => {
-                    console.log(`newVal:: ${newVal}`);
                     if (Number(newVal) == 1) {
                       setEventType(EventType.SPECIFIC_DATES);
                     } else setEventType(EventType.DAYS_OF_THE_WEEK);

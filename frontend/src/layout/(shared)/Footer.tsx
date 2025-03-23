@@ -10,7 +10,7 @@ const Footer = () => {
             <span className="font-semibold">OpenMeet</span>
           </div>
           <p className="text-sm text-gray-600">
-            © 2024 OpenMeet. All rights reserved.
+            © 2025 OpenMeet. Student projected created by Bobby Liu
           </p>
         </div>
       </footer>

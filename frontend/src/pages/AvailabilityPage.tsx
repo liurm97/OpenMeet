@@ -22,7 +22,10 @@ const AvailabilityPage = () => {
   useEffect(() => {
     // If user is authenticated - save userId in localStorage
     if (isSignedIn)
-      localStorage.setItem(`${USERID}${eventId}`, auth.userId as string);
+      localStorage.setItem(
+        `${USERID}${eventId}`,
+        `${auth.userId}:${eventId}` as string
+      );
     // Else clear userId in localStorage
     else localStorage.removeItem(`${USERID}${eventId}`);
 

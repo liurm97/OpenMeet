@@ -130,8 +130,6 @@ class DayModelTests(TestCase):
                 self.valid_create_event_payload["id"] = unique_id_str
                 created_event = Event.objects.create(**self.valid_create_event_payload)
 
-                print(created_event)
-
                 day["event"] = created_event
                 day["id"] = str(uuid4())
                 Day.objects.create(**day)

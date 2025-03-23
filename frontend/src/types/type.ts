@@ -127,3 +127,8 @@ export type patchEventRespondentAvailabilityType = {
   existing_availabilities: EventTimeUTC[];
   new_availabilities: EventTimeUTC[];
 };
+
+export type addEventRespondentAvailabilityType = {
+  respondent_id: string;
+  new_availabilities: EventTimeUTC[] | [];
+};

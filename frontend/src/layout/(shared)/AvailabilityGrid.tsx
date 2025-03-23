@@ -1,4 +1,6 @@
+import BinDialog from "@/components/(shared)/BinDialog";
 import ReadOnlyAvailabilityTable from "@/components/(shared)/ReadOnlyAvailabilityTable";
+import RespondentNameAndSmileIcon from "@/components/(shared)/RespondentNameAndSmileIcon";
 import WriteAvailabilityTable from "@/components/(shared)/WriteAvailabilityTable";
 import {
   DefaultDateTimeObjectType,
@@ -8,8 +10,9 @@ import {
   RespondentAvailabilityType,
 } from "@/types/type";
 import { EDITUSER } from "@/utils/constants";
-import { Pencil, PenOff, Smile } from "lucide-react";
-import { useState } from "react";
+import { useAuth } from "@clerk/clerk-react";
+import { Pencil, Trash2, Trash } from "lucide-react";
+import React, { useState } from "react";
 
 const AvailabilityGrid = ({
   availabilityState,
@@ -30,20 +33,21 @@ const AvailabilityGrid = ({
   previousArrayRef: React.MutableRefObject<boolean[][] | undefined>;
   editRespondentNameRef: React.MutableRefObject<string | undefined>;
 }) => {
-  console.log(previousArrayRef.current);
-  // variables
+  {
+    /* Availability Grid + Response section */
+  }
+
+  // Variables
   const respondentAvailability = availabilityState.respondentAvailability;
   const readCommonArray = availabilityState.common;
 
-  console.log(respondentAvailability);
-  console.log(readCommonArray);
-
-  // useStates
+  // States
   const [isHovering, setIsHovering] = useState<boolean>(false);
 
-  // useRefs
-  // const previousArray = useRef(availabilityState.readShape);
+  // Hooks
+  const auth = useAuth();
 
+  // Functions
   const getSpecificRespondentAvailability = (
     respondentId: string,
     respondentAvailabilityArray: RespondentAvailabilityType[]
@@ -81,7 +85,7 @@ const AvailabilityGrid = ({
           <ReadOnlyAvailabilityTable
             // value={valueReadAvailabilityTable}
             isHovering={isHovering}
-            value={previousArrayRef.current}
+            value={previousArrayRef.current as boolean[][]}
             eventDates={eventData?.event_dates as EventDate[]}
             eventDays={eventData?.event_days as EventDay[]}
             timeArray={timeArray}
@@ -115,7 +119,7 @@ const AvailabilityGrid = ({
           (eventData?.type == 1 ? (
             <WriteAvailabilityTable
               eventId={eventData?.id as string}
-              writeShape={previousArrayRef.current}
+              writeShape={previousArrayRef.current as boolean[][]}
               eventDates={eventData?.event_dates as EventDate[]}
               timeArray={timeArray}
               writeModeTypeRef={writeModeTypeRef}
@@ -123,7 +127,7 @@ const AvailabilityGrid = ({
           ) : (
             <WriteAvailabilityTable
               eventId={eventData?.id as string}
-              writeShape={previousArrayRef.current}
+              writeShape={previousArrayRef.current as boolean[][]}
               eventDays={eventData?.event_days as EventDay[]}
               timeArray={timeArray}
               writeModeTypeRef={writeModeTypeRef}
@@ -145,64 +149,95 @@ const AvailabilityGrid = ({
             )}
 
             <div className="flex flex-col gap-4 justify-center">
-              {eventData?.event_respondents?.map((respondent, _ind: number) =>
-                respondent.isGuestRespondent ? (
-                  <div
-                    key={`event_respondents${_ind}`}
-                    className="flex flex-row justify-between group"
-                    onMouseEnter={() => {
-                      previousArrayRef.current =
-                        getSpecificRespondentAvailability(
-                          respondent.id,
-                          respondentAvailability
-                        );
-                      setIsHovering(true);
-                    }}
-                    onMouseLeave={() => {
-                      previousArrayRef.current = availabilityState.readShape;
-                      setIsHovering(false);
-                    }}
-                  >
-                    <div className="flex flex-row gap-1 items-center">
-                      <Smile size={16} />
-                      <p className="text-sm group-hover:font-bold">
-                        {respondent.name}
-                      </p>
-                    </div>
+              {eventData?.event_respondents?.map((respondent, _ind: number) => (
+                <div
+                  key={`event_respondents_true_${_ind}`}
+                  className="flex flex-row justify-between group"
+                  onMouseEnter={() => {
+                    const respondentId = respondent.id;
 
-                    {/* Edit respondent's availabilities */}
-                    <button
-                      className="hidden group-hover:block"
-                      onClick={() => {
-                        localStorage.setItem(
-                          `${EDITUSER}${eventData?.id}`,
-                          respondent.id
-                        );
-                        writeModeTypeRef.current = "edit";
-                        editRespondentNameRef.current =
-                          getSpecificRespondentName(
-                            respondent.id,
-                            respondentAvailability
+                    previousArrayRef.current =
+                      getSpecificRespondentAvailability(
+                        respondentId,
+                        respondentAvailability
+                      );
+                    setIsHovering(true);
+                  }}
+                  onMouseLeave={() => {
+                    previousArrayRef.current = availabilityState.readShape;
+                    setIsHovering(false);
+                  }}
+                >
+                  <RespondentNameAndSmileIcon
+                    name={respondent.name}
+                    isGuestRespondent={respondent.isGuestRespondent}
+                  />
+
+                  {/* Edit respondent's availabilities */}
+
+                  {respondent.isGuestRespondent ? (
+                    <div className="flex flex-row gap-2 items-center justify-end ">
+                      <button
+                        className="hidden group-hover:block"
+                        onClick={() => {
+                          const respondentId = respondent.id;
+
+                          localStorage.setItem(
+                            `${EDITUSER}${eventData?.id}`,
+                            respondentId
                           );
-                        setMode("write");
-                        setIsHovering(false);
-                      }}
-                    >
-                      <Pencil size={16} className="text-gray-500" />
-                    </button>
-                  </div>
-                ) : (
-                  <div className="flex flex-row justify-between group hover:text-gray-500">
-                    <div className="flex flex-row gap-1 items-center">
-                      <Smile size={16} />
-                      <p className="text-sm">{respondent.name}</p>
+                          writeModeTypeRef.current = "edit";
+                          editRespondentNameRef.current =
+                            getSpecificRespondentName(
+                              respondentId,
+                              respondentAvailability
+                            );
+                          setMode("write");
+                          setIsHovering(false);
+                        }}
+                      >
+                        <Pencil size={16} className="text-gray-500" />
+                      </button>
+                      <BinDialog
+                        eventId={eventData?.id}
+                        respondentName={respondent.name}
+                        respondentId={respondent.id}
+                      />
                     </div>
-                    <button className="hidden cursor-not-allowed group-hover:block">
-                      <PenOff size={16} className="text-gray-500" />
-                    </button>
-                  </div>
-                )
-              )}
+                  ) : auth.isSignedIn &&
+                    `${auth.userId}:${eventData?.id}` == respondent.id ? (
+                    <div className="flex flex-row gap-2 items-center justify-end ">
+                      <button
+                        className="hidden group-hover:block"
+                        onClick={() => {
+                          const respondentId = respondent.id;
+
+                          localStorage.setItem(
+                            `${EDITUSER}${eventData?.id}`,
+                            respondentId
+                          );
+                          writeModeTypeRef.current = "edit";
+                          editRespondentNameRef.current =
+                            getSpecificRespondentName(
+                              respondentId,
+                              respondentAvailability
+                            );
+                          setMode("write");
+                          setIsHovering(false);
+                        }}
+                      >
+                        <Pencil size={16} className="text-gray-500" />
+                      </button>
+
+                      <BinDialog
+                        eventId={eventData?.id}
+                        respondentName={respondent.name}
+                        respondentId={respondent.id}
+                      />
+                    </div>
+                  ) : undefined}
+                </div>
+              ))}
             </div>
           </div>
         </div>

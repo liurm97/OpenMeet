@@ -1,7 +1,5 @@
 from rest_framework import serializers
-from ..models import Event, Availability, Date, Day, Respondent
-from datetime import datetime
-from uuid import uuid4
+from ..models import Availability
 from django.core.validators import RegexValidator
 
 
@@ -31,13 +29,35 @@ class EventTimeUTCSerializer(serializers.Serializer):
 
 class AddSpecificEventAvailabilitySerializer(serializers.Serializer):
     """
-    Serializer for POST /events/<event_id>/availabilities to verify that `event_id` is provided in parameter.
+    Serializer for POST /events/<event_id>/availabilities to verify that required fields are in the payload.
     """
 
     event_id = serializers.UUIDField(required=True)
     respondentName = serializers.CharField(required=True)
     respondentArray = EventTimeUTCSerializer(many=True, required=True)
     isGuestRespondent = serializers.BooleanField(required=True)
+    signedInUserId = serializers.CharField(required=False)
 
     class Meta:
-        fields = ["event_id", "respondentName", "respondentArray", "isGuestRespondent"]
+        fields = [
+            "event_id",
+            "respondentName",
+            "respondentArray",
+            "isGuestRespondent",
+            "signedInUserId",
+        ]
+
+
+class DeleteSpecificEventAvailabilitySerializer(serializers.Serializer):
+    """
+    Serializer for DELETE /events/<event_id>/availabilities to verify that required fields are in the payload.
+    """
+
+    event_id = serializers.UUIDField(required=True)
+    respondentId = serializers.CharField(required=True)
+
+    class Meta:
+        fields = [
+            "event_id",
+            "respondentId",
+        ]

@@ -15,19 +15,28 @@ import { ADDUSERAVAILABILITY, AVAILABILITYSTATE } from "@/utils/constants";
 import { EventTimeUTC } from "@/types/type";
 import { formatAvailabilityBooleanToString } from "@/utils/formatter";
 import { addEventRespondentAvailability } from "@/services/api/api";
-import { useAuth } from "@clerk/clerk-react";
+import { useAuth, useUser } from "@clerk/clerk-react";
 
 const SaveDialog = ({ eventId, type }: { eventId: string; type: number }) => {
-  // useStates
-  const [isLoading, setIsLoading] = useState<boolean>(false);
-  const auth = useAuth();
-  const [text, setText] = useState<string>("");
-  const navigate = useNavigate();
+  /*
+    Component to facilitate add respondent availability series of events
+  */
 
+  // States
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [text, setText] = useState<string>("");
+
+  // Hooks
+  const navigate = useNavigate();
+  const auth = useAuth();
+  const user = useUser();
+
+  // Handler functions
   const handleAddRespondentAvailbility = async (
     eventId: string,
     respondentName: string,
-    respondentArray: boolean[][]
+    respondentArray: boolean[][],
+    signedInUserId?: string
   ) => {
     try {
       if (respondentName.length < 1) {
@@ -35,9 +44,6 @@ const SaveDialog = ({ eventId, type }: { eventId: string; type: number }) => {
       }
 
       setIsLoading(true);
-      console.log(eventId);
-      console.log(respondentName);
-      console.log(respondentArray);
       const availabilityState = JSON.parse(
         localStorage.getItem(`${AVAILABILITYSTATE}${eventId}`) as string
       );
@@ -48,13 +54,14 @@ const SaveDialog = ({ eventId, type }: { eventId: string; type: number }) => {
           availabilityState?.availability as string[][]
         );
 
-      console.log(formattedRespondentStringArray);
+      // if user is signed in, use authenticated user's name and id to add availability
       if (auth.isSignedIn) {
         await addEventRespondentAvailability(
           eventId,
-          respondentName,
+          respondentName as string,
           formattedRespondentStringArray,
-          false
+          false,
+          signedInUserId as string
         );
       } else {
         await addEventRespondentAvailability(
@@ -75,7 +82,27 @@ const SaveDialog = ({ eventId, type }: { eventId: string; type: number }) => {
       setIsLoading(false);
     }
   };
-  return (
+  return auth.isSignedIn ? (
+    <Button
+      className="bg-white border-green-500 border text-green-500 hover:bg-green-100"
+      onClick={() => {
+        const signedInUserFullname = user.user?.fullName;
+        const signedInUserId = `${auth.userId}:${eventId}`;
+
+        const respondentArray = JSON.parse(
+          localStorage.getItem(`${ADDUSERAVAILABILITY}${eventId}`) as string
+        );
+        handleAddRespondentAvailbility(
+          eventId,
+          signedInUserFullname as string,
+          respondentArray,
+          signedInUserId
+        );
+      }}
+    >
+      <span>Save</span>
+    </Button>
+  ) : (
     <Dialog>
       <DialogTrigger asChild>
         <Button className="bg-white border-green-500 border text-green-500 hover:bg-green-100">

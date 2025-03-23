@@ -9,4 +9,3 @@ class Command(BaseCommand):
 
     def handle(self, *args: Any, **options: Any) -> str | None:
         Event.objects.all().delete()
-        print("Clear db done!")

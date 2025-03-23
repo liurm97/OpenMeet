@@ -216,3 +216,16 @@ export const formatAvailabilityBooleanToString = (
   }
   return outputArrayUTC;
 };
+
+export const formatTimeArray = (availability: string[][]): string[] => {
+  return availability[0].map((_datetime, _ind) => {
+    // Split datetime and get the time value. i.e -> 10:00, 11:00, 12:00
+    const splitted = _datetime.split(" ");
+    const time = splitted[splitted.length - 1];
+
+    // Push time ending with `00` to timeArray. i.e -> 10:00, 11:00, 12:00
+    if (_ind % 2 == 0) {
+      return time;
+    }
+  }) as string[];
+};
