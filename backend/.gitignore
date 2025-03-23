@@ -169,3 +169,4 @@ client_secret.json
 .vscode/
 .DS_Store
 node_modules/
+env/*
