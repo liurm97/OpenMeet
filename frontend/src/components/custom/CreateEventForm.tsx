@@ -45,9 +45,12 @@ enum EventType {
 
 // Form validation schema
 const formSchema = z.object({
-  eventName: z.string().min(1, {
-    message: "Event name required",
-  }),
+  eventName: z
+    .string()
+    .refine(
+      (value) => /^[a-zA-Z0-9]+/.test(value ?? ""),
+      "At least one alphanumeric character"
+    ),
   startTime: z.string().time({ message: "Start time required" }),
   endTime: z.string().time({ message: "End time required" }),
   eventDateType: z.number(),
@@ -289,6 +292,7 @@ const CreateEventForm = () => {
             render={({ field }) => (
               <FormItem className="flex flex-col mx-auto">
                 <Calendar
+                  fromDate={new Date()}
                   mode="multiple"
                   selected={field.value as Date[]}
                   onSelect={(val) => field.onChange(val)}
